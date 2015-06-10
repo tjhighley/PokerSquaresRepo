@@ -315,11 +315,11 @@ public class PokerSquares {
 		ArrayList<PokerSquaresPlayer> players = new ArrayList<PokerSquaresPlayer>();
 		players.add(new RandomPlayer());
 		players.add(new GreedyMCPlayer(2));
-		players.add(new GreedyMCPlayer(24));
+		players.add(new SRulerPlayer(0));
 		ArrayList<PokerSquaresPointSystem> systems = new ArrayList<PokerSquaresPointSystem>();
 		PokerSquaresPointSystem.setSeed(0L);
 		systems.add(system);
 		systems.add(PokerSquaresPointSystem.getRandomPointSystem());
-		PokerSquares.playTournament(players, systems, 2, 0L); // use fewer games per system for faster testing
+		PokerSquares.playTournament(players, systems, 5, 0L); // use fewer games per system for faster testing
 	}
 }
