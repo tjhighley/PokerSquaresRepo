@@ -313,9 +313,9 @@ public class PokerSquares {
 		// Demonstration of tournament evaluation (3 players, 2 point systems, 100 x 30s games for each of the 3*2=6 player-system pairs) 
 		System.out.println("\n\nTournament evaluation demo:");
 		ArrayList<PokerSquaresPlayer> players = new ArrayList<PokerSquaresPlayer>();
+		players.add(new SRulerPlayer(2));
 		players.add(new RandomPlayer());
 		players.add(new GreedyMCPlayer(2));
-		players.add(new SRulerPlayer(0));
 		ArrayList<PokerSquaresPointSystem> systems = new ArrayList<PokerSquaresPointSystem>();
 		PokerSquaresPointSystem.setSeed(0L);
 		systems.add(system);

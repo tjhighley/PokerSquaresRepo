@@ -228,7 +228,11 @@ public class SRulerPlayer implements PokerSquaresPlayer {
 
     @Override
     public void setPointSystem(PokerSquaresPointSystem system, long millis) {
+        long startTime = System.currentTimeMillis();
+        long endTime = startTime + millis;
         this.system = system;
+
+        // Five-card hands just have the scoring system values
         handVals.put(OurPokerHand.ROYAL_FLUSH5, system.getHandScore(PokerHand.ROYAL_FLUSH));
         handVals.put(OurPokerHand.STRAIGHT_FLUSH5, system.getHandScore(PokerHand.STRAIGHT_FLUSH));
         handVals.put(OurPokerHand.FOUR_OF_A_KIND5, system.getHandScore(PokerHand.FOUR_OF_A_KIND));
@@ -270,6 +274,7 @@ public class SRulerPlayer implements PokerSquaresPlayer {
         handVals.put(OurPokerHand.HIGH_CARD4, Math.max(system.getHandScore(PokerHand.HIGH_CARD),
                 system.getHandScore(PokerHand.ONE_PAIR)));
 
+        // 3-card hands
         handVals.put(OurPokerHand.ROYAL_FLUSH3, Math.max(handVals.get(OurPokerHand.ROYAL_FLUSH4),
                 Math.max(handVals.get(OurPokerHand.STRAIGHT4), Math.max(handVals.get(OurPokerHand.FLUSH4),
                                 Math.max(handVals.get(OurPokerHand.HIGH_CARD4),
@@ -296,6 +301,7 @@ public class SRulerPlayer implements PokerSquaresPlayer {
         handVals.put(OurPokerHand.HIGH_CARD3, Math.max(handVals.get(OurPokerHand.HIGH_CARD4),
                 handVals.get(OurPokerHand.ONE_PAIR4)));
 
+        // 2-card hands
         handVals.put(OurPokerHand.ROYAL_FLUSH2, Math.max(handVals.get(OurPokerHand.ROYAL_FLUSH3),
                 Math.max(handVals.get(OurPokerHand.STRAIGHT3), Math.max(handVals.get(OurPokerHand.FLUSH3),
                                 Math.max(handVals.get(OurPokerHand.HIGH_CARD3),
@@ -319,12 +325,96 @@ public class SRulerPlayer implements PokerSquaresPlayer {
         handVals.put(OurPokerHand.HIGH_CARD2, Math.max(handVals.get(OurPokerHand.HIGH_CARD3),
                 handVals.get(OurPokerHand.ONE_PAIR3)));
 
+        // Zero or one card hands
         handVals.put(OurPokerHand.ONE_CARD, Math.max(handVals.get(OurPokerHand.ROYAL_FLUSH2),
                 Math.max(handVals.get(OurPokerHand.STRAIGHT2), Math.max(handVals.get(OurPokerHand.FLUSH2),
                                 Math.max(handVals.get(OurPokerHand.HIGH_CARD2),
                                         Math.max(handVals.get(OurPokerHand.ONE_PAIR2),
                                                 handVals.get(OurPokerHand.STRAIGHT_FLUSH2)))))));
         handVals.put(OurPokerHand.ZERO_CARDS, handVals.get(OurPokerHand.ONE_CARD));
+
+        adjustHandVals(endTime);
+    }
+
+    /**
+     * Use stochastic ruler to adjust the partial hand values.
+     */
+    private void adjustHandVals(long endTime) {
+        HashMap<OurPokerHand, Integer> current
+                = (HashMap<OurPokerHand, Integer>) handVals.clone();
+
+        // Save best seen
+        HashMap<OurPokerHand, Integer> best
+                = (HashMap<OurPokerHand, Integer>) handVals.clone();
+        int bestValue, worstValue;
+        bestValue = worstValue = srEvaluate(handVals);
+
+        // Find least valuable hand and max value per partial hand
+        int leastValHand = Integer.MAX_VALUE;
+        HashMap<OurPokerHand, Integer> handValCap = 
+                (HashMap<OurPokerHand, Integer>) handVals.clone();
+        for (OurPokerHand thisHand : handVals.keySet()) {
+            if (handVals.get(thisHand) < leastValHand)
+                leastValHand = handVals.get(thisHand);            
+        }
+
+        long startLoopTime = System.currentTimeMillis();
+        endTime = endTime - 270000; // Shorten time for testing
+        while (System.currentTimeMillis() < endTime) {
+            System.out.println(current);
+            // Find a neighbor
+            HashMap<OurPokerHand, Integer> neighbor
+                    = (HashMap<OurPokerHand, Integer>) current.clone();
+
+            for (OurPokerHand thisHand : neighbor.keySet()) {
+                // FIXME: Make jumps grow smaller over time
+                if (thisHand.ordinal() >= 10
+                        && random.nextInt(100) > ((double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime) * 90)) {
+                    int interval = (int) (((double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime)) * 255)  + 1;
+                    int newVal = neighbor.get(thisHand) + random.nextInt(interval) - (interval / 2);                    
+                    newVal = Math.min(newVal, handValCap.get(thisHand));
+                    newVal = Math.max(newVal, leastValHand);
+                    neighbor.put(thisHand, newVal);
+                }
+            }
+
+            // Evaluate the neighbor
+            int neighborVal = srEvaluate(neighbor);
+
+            // If neighbor is good, use the neighbor
+            int theta = random.nextInt(bestValue - worstValue + 1) + worstValue;
+            System.out.print("theta: " + theta);
+            System.out.println("\t\tneighborVal: " + neighborVal);
+            if (neighborVal > theta) {
+                current = (HashMap<OurPokerHand, Integer>) neighbor;
+            }
+
+            // If neighbor is best, save best
+            if (neighborVal > bestValue) {
+                best = (HashMap<OurPokerHand, Integer>) neighbor.clone();
+                bestValue = neighborVal;
+            }
+
+            if (neighborVal < worstValue) {
+                worstValue = neighborVal;
+            }
+        }
+        handVals = (HashMap<OurPokerHand, Integer>) best;
+        System.out.println("best");
+        System.out.println(best);
+    }
+
+    private int srEvaluate(HashMap<OurPokerHand, Integer> values) {
+        HashMap<OurPokerHand, Integer> original = handVals;
+        handVals = values;        
+        int total = 0;
+        init();
+        for (int i = 0; i < 3; i++) {            
+            total += simGreedyPlay(25);
+            init();
+        }
+        handVals = original;
+        return total / 3;
     }
 
     /* (non-Javadoc)

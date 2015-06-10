@@ -476,6 +476,7 @@
         public static final int getPokerHandId(Card[] hand) {
             return getPokerHand(hand).id;
         }
+        
 
         /* (non-Javadoc)
          * @see java.lang.Enum#toString()
