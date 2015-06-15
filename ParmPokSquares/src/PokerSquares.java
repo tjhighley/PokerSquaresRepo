@@ -303,7 +303,7 @@ public class PokerSquares {
 		PokerSquaresPointSystem.setSeed(0L);
 		PokerSquaresPointSystem system = PokerSquaresPointSystem.getAmeritishPointSystem();
 		System.out.println(system);		
-                //new PokerSquares(new GreedyMCPlayer(2), system).play();
+                new PokerSquares(new SRulerPlayer(25), system).play();
 
 		// Demonstration of batch game play (30 seconds per game)
 		System.out.println("\n\nBatch game demo:");
@@ -313,7 +313,7 @@ public class PokerSquares {
 		// Demonstration of tournament evaluation (3 players, 2 point systems, 100 x 30s games for each of the 3*2=6 player-system pairs) 
 		System.out.println("\n\nTournament evaluation demo:");
 		ArrayList<PokerSquaresPlayer> players = new ArrayList<PokerSquaresPlayer>();
-		players.add(new SRulerPlayer(2));
+		players.add(new SRulerPlayer(25));
 		players.add(new RandomPlayer());
 		players.add(new GreedyMCPlayer(2));
 		ArrayList<PokerSquaresPointSystem> systems = new ArrayList<PokerSquaresPointSystem>();

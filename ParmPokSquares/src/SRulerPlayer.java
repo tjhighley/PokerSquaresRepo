@@ -100,6 +100,9 @@ public class SRulerPlayer implements PokerSquaresPlayer {
         simDeck[cardIndex] = simDeck[numPlays];
         simDeck[numPlays] = card;
 
+        if (numPlays == 0) { // trivial first play
+            plays[0] = 0;
+        }
         if (numPlays < 24) { // not the forced last play
             // compute average time per move evaluation
             int remainingPlays = NUM_POS - numPlays; // ignores triviality of last play to keep a conservative margin for game completion
@@ -155,6 +158,7 @@ public class SRulerPlayer implements PokerSquaresPlayer {
      * depthLimit
      */
     private int simGreedyPlay(int depthLimit) {
+        if (numPlays > 24) System.out.println ("OOPS!  Start simGreedyPlay: numPlays: " + numPlays);
         if (depthLimit == 0) { // with zero depth limit, return current score
             //return system.getScore(grid);
             return evalGrid(grid);
@@ -359,18 +363,19 @@ public class SRulerPlayer implements PokerSquaresPlayer {
         }
 
         long startLoopTime = System.currentTimeMillis();
-        endTime = endTime - 270000; // Shorten time for testing
+        endTime = endTime - 1000; // Shorten time for testing
+        int iter = 0;
         while (System.currentTimeMillis() < endTime) {
-            System.out.println(current);
+            iter++;
+            //System.out.println(current);
             // Find a neighbor
             HashMap<OurPokerHand, Integer> neighbor
                     = (HashMap<OurPokerHand, Integer>) current.clone();
 
-            for (OurPokerHand thisHand : neighbor.keySet()) {
-                // FIXME: Make jumps grow smaller over time
+            for (OurPokerHand thisHand : neighbor.keySet()) {                
                 if (thisHand.ordinal() >= 10
-                        && random.nextInt(100) > ((double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime) * 90)) {
-                    int interval = (int) (((double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime)) * 255)  + 1;
+                        && random.nextInt(100) > ((double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime) * 50)) {
+                    int interval = (int) (((double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime)) * 20)  + 2;
                     int newVal = neighbor.get(thisHand) + random.nextInt(interval) - (interval / 2);                    
                     newVal = Math.min(newVal, handValCap.get(thisHand));
                     newVal = Math.max(newVal, leastValHand);
@@ -383,16 +388,17 @@ public class SRulerPlayer implements PokerSquaresPlayer {
 
             // If neighbor is good, use the neighbor
             int theta = random.nextInt(bestValue - worstValue + 1) + worstValue;
-            System.out.print("theta: " + theta);
-            System.out.println("\t\tneighborVal: " + neighborVal);
             if (neighborVal > theta) {
                 current = (HashMap<OurPokerHand, Integer>) neighbor;
+                //System.out.println("New current: " + current);
             }
 
             // If neighbor is best, save best
-            if (neighborVal > bestValue) {
+            if (neighborVal > (bestValue + srEvaluate(best)) / 2) {
                 best = (HashMap<OurPokerHand, Integer>) neighbor.clone();
                 bestValue = neighborVal;
+                System.out.println("******************************************************** iter: " + iter + "\t%time elapsed: " + 100*(double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime));
+                System.out.println("New best: " + best);
             }
 
             if (neighborVal < worstValue) {
@@ -409,12 +415,12 @@ public class SRulerPlayer implements PokerSquaresPlayer {
         handVals = values;        
         int total = 0;
         init();
-        for (int i = 0; i < 3; i++) {            
+        for (int i = 0; i < 20; i++) {            
             total += simGreedyPlay(25);
             init();
         }
         handVals = original;
-        return total / 3;
+        return total / 20;
     }
 
     /* (non-Javadoc)
