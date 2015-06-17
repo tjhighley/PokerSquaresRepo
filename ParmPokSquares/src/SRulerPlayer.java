@@ -4,20 +4,6 @@ import java.util.HashMap;
 import java.util.Random;
 
 /**
- * GreedyMCPlayer - a simple, greedy Monte Carlo implementation of the player
- * interface for PokerSquares. For each possible play, continues greedy play
- * with random possible card draws to a given depth limit (or game end). Having
- * sampled trajectories for all possible plays, the GreedyMCPlayer then selects
- * the play yielding the best average scoring potential in such Monte Carlo
- * simulation.
- *
- * Disclaimer: This example code is not intended as a model of efficiency.
- * (E.g., patterns from Knuth's Dancing Links algorithm (DLX) can provide faster
- * legal move list iteration/deletion/restoration.) Rather, this example code
- * illustrates how a player could be constructed. Note how time is simply
- * managed so as to not run out the play clock.
- *
- * Author: Todd W. Neller
  */
 public class SRulerPlayer implements PokerSquaresPlayer {
 
@@ -36,12 +22,11 @@ public class SRulerPlayer implements PokerSquaresPlayer {
     // we swap each dealt card to its correct index.  Thus, from index numPlays 
     // onward, we maintain a list of undealt cards for MC simulation.
     private int[][] legalPlayLists = new int[NUM_POS][NUM_POS]; // stores legal play lists indexed by numPlays (depth)
-    // (This avoids constant allocation/deallocation of such lists during the greedy selections of MC simulations.)
-
-    private HashMap<OurPokerHand, Integer>[] handVals = new HashMap[SIZE * SIZE];
+    // (This avoids constant allocation/deallocation of such lists during the greedy selections of MC simulations.) 
+    private HashMap<OurPokerHand, Integer>[] handVals = new HashMap[SIZE * SIZE]; // an array of Hashmaps to better evaluate and chnage values of partial hands
 
     /**
-     * Create a Greedy Monte Carlo player that simulates greedy play to depth 2.
+     * Initializes the HashMaps for handVals
      */
     public SRulerPlayer() {
         for (int i = 0; i < handVals.length; i++) {
@@ -50,16 +35,23 @@ public class SRulerPlayer implements PokerSquaresPlayer {
     }
 
     /**
-     * Create a Greedy Monte Carlo player that simulates greedy play to a given
-     * depth limit.
+     * Create a sRulerPlayer player that simulates greedy play to a given depth
+     * limit.
      *
-     * @param depthLimit depth limit for random greedy simulated play
+     * @param depthLimit depth limit for random sRuler simulated play
      */
     public SRulerPlayer(int depthLimit) {
         this();
         this.depthLimit = depthLimit;
     }
 
+    /**
+     * creates the initial hand values for partial hands for their maximum
+     * potential score
+     *
+     * @param system Sets what original point system is to be used
+     * @param millis the amount of time to be used
+     */
     @Override
     public void setPointSystem(PokerSquaresPointSystem system, long millis) {
         long startTime = System.currentTimeMillis();
@@ -108,7 +100,7 @@ public class SRulerPlayer implements PokerSquaresPlayer {
         handVals[0].put(OurPokerHand.HIGH_CARD4, Math.max(system.getHandScore(PokerHand.HIGH_CARD),
                 system.getHandScore(PokerHand.ONE_PAIR)));
 
-        // 3-card hands
+        // 3-card hands to be evaluated for maximum potential score
         handVals[0].put(OurPokerHand.ROYAL_FLUSH3, Math.max(handVals[0].get(OurPokerHand.ROYAL_FLUSH4),
                 Math.max(handVals[0].get(OurPokerHand.STRAIGHT4), Math.max(handVals[0].get(OurPokerHand.FLUSH4),
                                 Math.max(handVals[0].get(OurPokerHand.HIGH_CARD4),
@@ -135,7 +127,7 @@ public class SRulerPlayer implements PokerSquaresPlayer {
         handVals[0].put(OurPokerHand.HIGH_CARD3, Math.max(handVals[0].get(OurPokerHand.HIGH_CARD4),
                 handVals[0].get(OurPokerHand.ONE_PAIR4)));
 
-        // 2-card hands
+        // 2-card hands to be evaluated for max potential socre
         handVals[0].put(OurPokerHand.ROYAL_FLUSH2, Math.max(handVals[0].get(OurPokerHand.ROYAL_FLUSH3),
                 Math.max(handVals[0].get(OurPokerHand.STRAIGHT3), Math.max(handVals[0].get(OurPokerHand.FLUSH3),
                                 Math.max(handVals[0].get(OurPokerHand.HIGH_CARD3),
@@ -159,7 +151,7 @@ public class SRulerPlayer implements PokerSquaresPlayer {
         handVals[0].put(OurPokerHand.HIGH_CARD2, Math.max(handVals[0].get(OurPokerHand.HIGH_CARD3),
                 handVals[0].get(OurPokerHand.ONE_PAIR3)));
 
-        // Zero or one card hands
+        // Zero or one card hands to be evaluated for maximum potential score
         handVals[0].put(OurPokerHand.ONE_CARD, Math.max(handVals[0].get(OurPokerHand.ROYAL_FLUSH2),
                 Math.max(handVals[0].get(OurPokerHand.STRAIGHT2), Math.max(handVals[0].get(OurPokerHand.FLUSH2),
                                 Math.max(handVals[0].get(OurPokerHand.HIGH_CARD2),
@@ -300,7 +292,6 @@ public class SRulerPlayer implements PokerSquaresPlayer {
                 for (int i = 0; i < remainingPlays; i++) {
                     int play = legalPlayLists[numPlays][i];
                     makePlay(card, play / SIZE, play % SIZE);
-                    // score = system.getScore(grid);
                     score = evalGrid(grid, numPlays - 1);
                     if (score >= maxScore) {
                         if (score > maxScore) {
@@ -353,14 +344,16 @@ public class SRulerPlayer implements PokerSquaresPlayer {
     }
 
     /**
-     * Use stochastic ruler to adjust the partial hand values.
+     * Use stochastic ruler to adjust the partial hand values before the initial
+     * 5 minutes has ended
      */
     private void adjustHandVals(long endTime) {
+        // current holds the current value of handVals
         HashMap<OurPokerHand, Integer>[] current
                 = (HashMap<OurPokerHand, Integer>[]) handVals.clone();
 
-        // Save best seen
-        HashMap<OurPokerHand, Integer>[] best
+        // Save best value seen
+        HashMap<OurPokerHand, Integer>[] bestHandVals
                 = (HashMap<OurPokerHand, Integer>[]) handVals.clone();
         double bestValue, worstValue;
         bestValue = worstValue = srEvaluate(handVals);
@@ -375,13 +368,12 @@ public class SRulerPlayer implements PokerSquaresPlayer {
                 leastValHand = handVals[0].get(thisHand);
             }
         }
-
+// finding "neighbors" to give new values for partial hands
         long startLoopTime = System.currentTimeMillis();
         endTime = endTime - 200000; // Shorten time for testing
         int iter = 0;
         while (System.currentTimeMillis() < endTime) {
             iter++;
-            //System.out.println(current);
             // Find a neighbor
             HashMap<OurPokerHand, Integer>[] neighbor
                     = (HashMap<OurPokerHand, Integer>[]) current.clone();
@@ -390,57 +382,64 @@ public class SRulerPlayer implements PokerSquaresPlayer {
                 for (OurPokerHand thisHand : neighbor[i].keySet()) {
                     if (thisHand.ordinal() >= 10
                             && random.nextInt(100) > ((double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime) * 50)) {
+                        // sets new values for partial hands to test the "neighbors"
                         int interval = (int) (((double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime)) * 20) + 2;
                         int newVal = neighbor[i].get(thisHand) + random.nextInt(interval) - (interval / 2);
+                        // the new values for the neighbor can only ever be modified between -128-127
                         newVal = Math.min(newVal, 127);
                         newVal = Math.max(newVal, -128);
+                        // assigns a value to the newly created neighbor
                         neighbor[i].put(thisHand, newVal);
                     }
                 }
             }
 
-            // Evaluate the neighbor
+            // Evaluate the neighbor to test if it is "good"
             double neighborVal = srEvaluate(neighbor);
 
-            // If neighbor is good, use the neighbor
+            // If neighbor returns good values, use the neighbor
             int theta = random.nextInt((int) (bestValue - worstValue + 1)) + (int) worstValue;
             if (neighborVal > theta) {
                 current = (HashMap<OurPokerHand, Integer>[]) neighbor;
-                //System.out.println("New current: " + current);
             }
 
-            // If neighbor is best, save best
+            // If neighbor returns the best value, save it
             if (neighborVal > (bestValue
-                    + srEvaluate(best)) / 2) {
-                best = (HashMap<OurPokerHand, Integer>[]) neighbor.clone();
+                    + srEvaluate(bestHandVals)) / 2) {
+                // saves the best hand values
+                bestHandVals = (HashMap<OurPokerHand, Integer>[]) neighbor.clone();
                 bestValue = neighborVal;
                 System.out.println("******************************************************** iter: " + iter + "\t%time elapsed: " + 100 * (double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime));
-                System.out.println("New best: " + bestValue + " " + best);
+                System.out.println("New best: " + bestValue + " " + bestHandVals);
             }
 
             if (neighborVal < worstValue) {
                 worstValue = neighborVal;
             }
-        }
-        handVals = (HashMap<OurPokerHand, Integer>[]) best;
+        } 
+        handVals = (HashMap<OurPokerHand, Integer>[]) bestHandVals;
 
         System.out.println(
                 "best");
-        System.out.println(best);
+        System.out.println(bestHandVals);
     }
-
+    /*
+    
+    */
     private double srEvaluate(HashMap<OurPokerHand, Integer>[] values) {
+        // saves the original hand values
         HashMap<OurPokerHand, Integer>[] original = handVals;
+        // takes in the new hand values
         handVals = values;
         int total = 0;
         init();
+        // simulates a game of pokersquares using the neighbors valuea
         for (int i = 0; i < 100; i++) {
             int result = simGreedyPlay(25);
             total += result;
-            //System.out.print("Play " + i + ": " + result + "; ");
             init();
         }
-        //System.out.println();
+        // resets the hand values toc the original
         handVals = original;
         return total / 100.0;
     }
