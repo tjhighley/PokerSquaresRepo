@@ -7,7 +7,7 @@
      *
      */
     public enum OurPokerHand {
-
+        // creates enumerated types for partial hands
         HIGH_CARD5(0, "high card"), ONE_PAIR5(1, "one pair"), TWO_PAIR5(2, "two pair"), THREE_OF_A_KIND5(3, "three of a kind"),
         STRAIGHT5(4, "straight"), FLUSH5(5, "flush"), FULL_HOUSE5(6, "full house"),
         FOUR_OF_A_KIND5(7, "four of a kind"), STRAIGHT_FLUSH5(8, "straight flush"), ROYAL_FLUSH5(9, "royal flush"),
@@ -28,19 +28,23 @@
         public static final int NUM_HANDS = OurPokerHand.values().length;
         public int id;
         public String name;
-
+/*
+        creates a poker hand
+        */
         OurPokerHand(int id, String name) {
             this.id = id;
             this.name = name;
         }
-
+// returns the pokerhand that the player has
         public static OurPokerHand getPokerHand(Card[] hand) {
             int count = 0;
+            // counts how many cards the player has in their hands
             for (int i = 0; i < hand.length; i++) {
                 if (hand[i] != null) {
                     count++;
                 }
             }
+            // returns ourPokerHand depending on how many cards are in it
             if (count == 0) {
                 return OurPokerHand.ZERO_CARDS;
             } else if (count == 1) {
@@ -55,7 +59,7 @@
                 return getPokerHand5(hand);
             }
         }
-
+// returns the players poker hand when there are two cards in it
         private static OurPokerHand getPokerHand2(Card[] hand) {
 
             // Compute counts
@@ -78,7 +82,7 @@
                 }
             }
 
-            // Flush check
+            // checks the player's hand for if they have the possibility of a flush
             boolean hasFlush = false;
             for (int i = 0; i < Card.NUM_SUITS; i++) {
                 if (suitCounts[i] != 0) {
@@ -89,7 +93,7 @@
                 }
             }
 
-            // Straight check
+            // checks the player's hand for if they have the possibility of a straight
             boolean hasStraight = false;
             boolean hasRoyal = false;
             int rank = 0;
@@ -101,7 +105,7 @@
                 hasStraight = true;
             }
 
-            // Royal check
+            // checks the player's hand for if they have the possibility of the royalflush
             int royalCount = 0;
             for (int i = 9; i <= 12; i++) {
                 if (rankCounts[i] == 1) {
@@ -115,7 +119,7 @@
                 hasRoyal = true;
             }
 
-            // Inside straight check
+            // checks the player's hand for the possibilty of an inside straight
             boolean hasInsideStraight = false;
             if (maxOfAKind == 1) {
                 // Find max/min kind
@@ -152,14 +156,14 @@
                 return OurPokerHand.STRAIGHT2; // Straight
             }
             if (hasInsideStraight) {
-                return OurPokerHand.INSIDE_STRAIGHT2;
+                return OurPokerHand.INSIDE_STRAIGHT2; // inside straight 2 cards in hand
             }
             if (rankCountCounts[2] == 1) {
                 return OurPokerHand.ONE_PAIR2; // One Pair
             }
             return OurPokerHand.HIGH_CARD2; // Otherwise, High Card.  This applies to empty Card arrays as well.            
         }
-
+// return the player's poker hand when they have 3 cards
         private static OurPokerHand getPokerHand3(Card[] hand) {
 
             // Compute counts
@@ -256,7 +260,7 @@
                 return OurPokerHand.STRAIGHT3; // Straight
             }
             if (hasInsideStraight) {
-                return OurPokerHand.INSIDE_STRAIGHT3;
+                return OurPokerHand.INSIDE_STRAIGHT3; // inside straight three cards in hand
             }
             if (maxOfAKind == 3) {
                 return OurPokerHand.THREE_OF_A_KIND3; // Three of a Kind
@@ -266,7 +270,7 @@
             }
             return OurPokerHand.HIGH_CARD3; // Otherwise, High Card.  This applies to empty Card arrays as well.            
         }
-
+// returns the player's pokerhand when there are four cards in hand
         private static OurPokerHand getPokerHand4(Card[] hand) {
 
             // Compute counts
@@ -366,7 +370,7 @@
                 return OurPokerHand.STRAIGHT4; // Straight
             }
             if (hasInsideStraight) {
-                return OurPokerHand.INSIDE_STRAIGHT4;
+                return OurPokerHand.INSIDE_STRAIGHT4; // inside straight 4 cards in hand
             }
             if (maxOfAKind == 3) {
                 return OurPokerHand.THREE_OF_A_KIND4; // Three of a Kind
