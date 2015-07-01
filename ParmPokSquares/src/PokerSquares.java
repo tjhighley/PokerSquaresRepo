@@ -312,15 +312,28 @@ public class PokerSquares {
                 
 		// Demonstration of tournament evaluation (3 players, 2 point systems, 100 x 30s games for each of the 3*2=6 player-system pairs) 
 		System.out.println("\n\nTournament evaluation demo:");
-		ArrayList<PokerSquaresPlayer> players = new ArrayList<PokerSquaresPlayer>();
-		players.add(new GAPlayer(25));
-                players.add(new SRulerPlayer(25));                
-		players.add(new RandomPlayer());
+		ArrayList<PokerSquaresPlayer> players = new ArrayList<>();
+                players.add(new GAPlayer(25, 500, true, true));		                                                
+//                players.add(new SRulerPlayer(25));  
+//                players.add(new SRulerPlayer(5));
+//		players.add(new RandomPlayer());
 		players.add(new GreedyMCPlayer(25));
-		ArrayList<PokerSquaresPointSystem> systems = new ArrayList<PokerSquaresPointSystem>();
+		ArrayList<PokerSquaresPointSystem> systems = new ArrayList<>();
 		PokerSquaresPointSystem.setSeed(0L);
-		systems.add(system);
-		systems.add(PokerSquaresPointSystem.getRandomPointSystem());
-		PokerSquares.playTournament(players, systems, 2, 0L); // use fewer games per system for faster testing
+//		systems.add(system);
+//		systems.add(PokerSquaresPointSystem.getRandomPointSystem());
+//                systems.add(PokerSquaresPointSystem.getAmericanPointSystem());
+//		systems.add(PokerSquaresPointSystem.getAmeritishPointSystem());
+		systems.add(PokerSquaresPointSystem.getBritishPointSystem());
+//		systems.add(PokerSquaresPointSystem.getHypercornerPointSystem());
+//		systems.add(PokerSquaresPointSystem.getRandomPointSystem());
+//		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.HIGH_CARD.id));
+//		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.ONE_PAIR.id));
+//		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.TWO_PAIR.id));
+//		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.THREE_OF_A_KIND.id));
+//		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.STRAIGHT.id));
+		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.FLUSH.id));
+//		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.FULL_HOUSE.id));                
+		PokerSquares.playTournament(players, systems, 3, 0L); // use fewer games per system for faster testing
 	}
 }

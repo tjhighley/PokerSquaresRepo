@@ -79,11 +79,14 @@ public class GAPopulation {
         public String toString() {
             String result = "";
             for (int i = 0; i < 25; i++) {
-                for (int j = OurPokerHand.HIGH_CARD5.ordinal();
-                        j < OurPokerHand.ZERO_CARDS.ordinal(); j++) {
-                    result += handVals.get(i, OurPokerHand.values()[j]) + " ";
+                if (i % 10 == 1) {
+                    for (int j = OurPokerHand.HIGH_CARD5.ordinal();
+                            j < OurPokerHand.ZERO_CARDS.ordinal(); j++) {
+                        result += handVals.get(i, OurPokerHand.values()[j]) + " ";
+                    }
+
+                    result += "\n";                        
                 }
-                result += "\n";                        
             }
             return result;
         }        

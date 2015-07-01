@@ -8,16 +8,16 @@ public class EarlyPPSTesting {
 		PokerSquaresPlayer player = new SRulerPlayer(0); // TODO - replace the RandomPlayer with your best player
 		ArrayList<PokerSquaresPointSystem> systems = new ArrayList<PokerSquaresPointSystem>();
 		PokerSquaresPointSystem.setSeed(0L);
-//		systems.add(PokerSquaresPointSystem.getAmericanPointSystem());
-//		systems.add(PokerSquaresPointSystem.getAmeritishPointSystem());
-//		systems.add(PokerSquaresPointSystem.getBritishPointSystem());
-//		systems.add(PokerSquaresPointSystem.getHypercornerPointSystem());
-//		systems.add(PokerSquaresPointSystem.getRandomPointSystem());
-//		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.HIGH_CARD.id));
-//		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.ONE_PAIR.id));
-//		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.TWO_PAIR.id));
-//		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.THREE_OF_A_KIND.id));
-//		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.STRAIGHT.id));
+		systems.add(PokerSquaresPointSystem.getAmericanPointSystem());
+		systems.add(PokerSquaresPointSystem.getAmeritishPointSystem());
+		systems.add(PokerSquaresPointSystem.getBritishPointSystem());
+		systems.add(PokerSquaresPointSystem.getHypercornerPointSystem());
+		systems.add(PokerSquaresPointSystem.getRandomPointSystem());
+		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.HIGH_CARD.id));
+		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.ONE_PAIR.id));
+		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.TWO_PAIR.id));
+		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.THREE_OF_A_KIND.id));
+		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.STRAIGHT.id));
 		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.FLUSH.id));
 		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.FULL_HOUSE.id));
 		// Note: Not all Poker hands are tested here to try to keep testing within 11 hours.

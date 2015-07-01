@@ -3,7 +3,7 @@ import java.util.HashMap;
 public class HandValues {
     private final int SIZE = 5;
 
-    private HashMap<OurPokerHand, Integer>[] handVals = new HashMap[SIZE * SIZE];
+    private HashMap<OurPokerHand, Integer>[] handVals = new HashMap[3];
     
     public HandValues() {
         for (int i = 0; i < handVals.length; i++) {
@@ -12,11 +12,11 @@ public class HandValues {
     }
     
     public void put (int index, OurPokerHand hand, Integer value) {
-        handVals[index].put(hand, value);
+        handVals[index / 10].put(hand, value);
     }
     
     public Integer get(int index, OurPokerHand hand) {
-        return handVals[index].get(hand);
+        return handVals[index / 10].get(hand);
     }
     
     // Copy the turn 0 hand values into all the other turns    

@@ -23,15 +23,12 @@ public class SRulerPlayer implements PokerSquaresPlayer {
     // onward, we maintain a list of undealt cards for MC simulation.
     private int[][] legalPlayLists = new int[NUM_POS][NUM_POS]; // stores legal play lists indexed by numPlays (depth)
     // (This avoids constant allocation/deallocation of such lists during the greedy selections of MC simulations.) 
-    private HashMap<OurPokerHand, Integer>[] handVals = new HashMap[SIZE * SIZE]; // an array of Hashmaps to better evaluate and chnage values of partial hands
+    private HandValues handVals = new HandValues(); // an array of Hashmaps to better evaluate and chnage values of partial hands
 
     /**
      * Initializes the HashMaps for handVals
      */
     public SRulerPlayer() {
-        for (int i = 0; i < handVals.length; i++) {
-            handVals[i] = new HashMap<>();
-        }
     }
 
     /**
@@ -59,110 +56,108 @@ public class SRulerPlayer implements PokerSquaresPlayer {
         this.system = system;
 
         // Five-card hands just have the scoring system values
-        handVals[0].put(OurPokerHand.ROYAL_FLUSH5, system.getHandScore(PokerHand.ROYAL_FLUSH));
-        handVals[0].put(OurPokerHand.STRAIGHT_FLUSH5, system.getHandScore(PokerHand.STRAIGHT_FLUSH));
-        handVals[0].put(OurPokerHand.FOUR_OF_A_KIND5, system.getHandScore(PokerHand.FOUR_OF_A_KIND));
-        handVals[0].put(OurPokerHand.FULL_HOUSE5, system.getHandScore(PokerHand.FULL_HOUSE));
-        handVals[0].put(OurPokerHand.FLUSH5, system.getHandScore(PokerHand.FLUSH));
-        handVals[0].put(OurPokerHand.STRAIGHT5, system.getHandScore(PokerHand.STRAIGHT));
-        handVals[0].put(OurPokerHand.THREE_OF_A_KIND5, system.getHandScore(PokerHand.THREE_OF_A_KIND));
-        handVals[0].put(OurPokerHand.TWO_PAIR5, system.getHandScore(PokerHand.TWO_PAIR));
-        handVals[0].put(OurPokerHand.ONE_PAIR5, system.getHandScore(PokerHand.ONE_PAIR));
-        handVals[0].put(OurPokerHand.HIGH_CARD5, system.getHandScore(PokerHand.HIGH_CARD));
+        handVals.put(0, OurPokerHand.ROYAL_FLUSH5, system.getHandScore(PokerHand.ROYAL_FLUSH));
+        handVals.put(0, OurPokerHand.STRAIGHT_FLUSH5, system.getHandScore(PokerHand.STRAIGHT_FLUSH));
+        handVals.put(0, OurPokerHand.FOUR_OF_A_KIND5, system.getHandScore(PokerHand.FOUR_OF_A_KIND));
+        handVals.put(0, OurPokerHand.FULL_HOUSE5, system.getHandScore(PokerHand.FULL_HOUSE));
+        handVals.put(0, OurPokerHand.FLUSH5, system.getHandScore(PokerHand.FLUSH));
+        handVals.put(0, OurPokerHand.STRAIGHT5, system.getHandScore(PokerHand.STRAIGHT));
+        handVals.put(0, OurPokerHand.THREE_OF_A_KIND5, system.getHandScore(PokerHand.THREE_OF_A_KIND));
+        handVals.put(0, OurPokerHand.TWO_PAIR5, system.getHandScore(PokerHand.TWO_PAIR));
+        handVals.put(0, OurPokerHand.ONE_PAIR5, system.getHandScore(PokerHand.ONE_PAIR));
+        handVals.put(0, OurPokerHand.HIGH_CARD5, system.getHandScore(PokerHand.HIGH_CARD));
 
         // Initialize values for partial hands as max potential score
-        handVals[0].put(OurPokerHand.ROYAL_FLUSH4, Math.max(system.getHandScore(PokerHand.FLUSH),
+        handVals.put(0, OurPokerHand.ROYAL_FLUSH4, Math.max(system.getHandScore(PokerHand.FLUSH),
                 Math.max(system.getHandScore(PokerHand.STRAIGHT_FLUSH),
                         Math.max(system.getHandScore(PokerHand.ROYAL_FLUSH),
                                 Math.max(system.getHandScore(PokerHand.HIGH_CARD),
                                         system.getHandScore(PokerHand.ONE_PAIR))))));
-        handVals[0].put(OurPokerHand.STRAIGHT_FLUSH4, Math.max(system.getHandScore(PokerHand.FLUSH),
+        handVals.put(0, OurPokerHand.STRAIGHT_FLUSH4, Math.max(system.getHandScore(PokerHand.FLUSH),
                 Math.max(system.getHandScore(PokerHand.STRAIGHT_FLUSH),
                         Math.max(system.getHandScore(PokerHand.HIGH_CARD),
                                 system.getHandScore(PokerHand.ONE_PAIR)))));
-        handVals[0].put(OurPokerHand.INSIDE_STRAIGHT_FLUSH4, handVals[0].get(OurPokerHand.STRAIGHT_FLUSH4));
-        handVals[0].put(OurPokerHand.FOUR_OF_A_KIND4, system.getHandScore(PokerHand.FOUR_OF_A_KIND));
-        handVals[0].put(OurPokerHand.FLUSH4, Math.max(system.getHandScore(PokerHand.FLUSH),
+        handVals.put(0, OurPokerHand.INSIDE_STRAIGHT_FLUSH4, handVals.get(0, OurPokerHand.STRAIGHT_FLUSH4));
+        handVals.put(0, OurPokerHand.FOUR_OF_A_KIND4, system.getHandScore(PokerHand.FOUR_OF_A_KIND));
+        handVals.put(0, OurPokerHand.FLUSH4, Math.max(system.getHandScore(PokerHand.FLUSH),
                 Math.max(system.getHandScore(PokerHand.HIGH_CARD),
                         system.getHandScore(PokerHand.ONE_PAIR))));
-        handVals[0].put(OurPokerHand.STRAIGHT4, Math.max(system.getHandScore(PokerHand.STRAIGHT),
+        handVals.put(0, OurPokerHand.STRAIGHT4, Math.max(system.getHandScore(PokerHand.STRAIGHT),
                 Math.max(system.getHandScore(PokerHand.HIGH_CARD),
                         system.getHandScore(PokerHand.ONE_PAIR))));
-        handVals[0].put(OurPokerHand.INSIDE_STRAIGHT4, handVals[0].get(OurPokerHand.STRAIGHT4));
-        handVals[0].put(OurPokerHand.THREE_OF_A_KIND4, Math.max(system.getHandScore(PokerHand.THREE_OF_A_KIND),
+        handVals.put(0, OurPokerHand.INSIDE_STRAIGHT4, handVals.get(0, OurPokerHand.STRAIGHT4));
+        handVals.put(0, OurPokerHand.THREE_OF_A_KIND4, Math.max(system.getHandScore(PokerHand.THREE_OF_A_KIND),
                 Math.max(system.getHandScore(PokerHand.FOUR_OF_A_KIND),
                         system.getHandScore(PokerHand.FULL_HOUSE))));
-        handVals[0].put(OurPokerHand.TWO_PAIR4, Math.max(system.getHandScore(PokerHand.FULL_HOUSE),
+        handVals.put(0, OurPokerHand.TWO_PAIR4, Math.max(system.getHandScore(PokerHand.FULL_HOUSE),
                 system.getHandScore(PokerHand.TWO_PAIR)));
-        handVals[0].put(OurPokerHand.ONE_PAIR4, Math.max(system.getHandScore(PokerHand.ONE_PAIR),
+        handVals.put(0, OurPokerHand.ONE_PAIR4, Math.max(system.getHandScore(PokerHand.ONE_PAIR),
                 Math.max(system.getHandScore(PokerHand.TWO_PAIR),
                         system.getHandScore(PokerHand.THREE_OF_A_KIND))));
-        handVals[0].put(OurPokerHand.HIGH_CARD4, Math.max(system.getHandScore(PokerHand.HIGH_CARD),
+        handVals.put(0, OurPokerHand.HIGH_CARD4, Math.max(system.getHandScore(PokerHand.HIGH_CARD),
                 system.getHandScore(PokerHand.ONE_PAIR)));
 
-        // 3-card hands to be evaluated for maximum potential score
-        handVals[0].put(OurPokerHand.ROYAL_FLUSH3, Math.max(handVals[0].get(OurPokerHand.ROYAL_FLUSH4),
-                Math.max(handVals[0].get(OurPokerHand.STRAIGHT4), Math.max(handVals[0].get(OurPokerHand.FLUSH4),
-                                Math.max(handVals[0].get(OurPokerHand.HIGH_CARD4),
-                                        Math.max(handVals[0].get(OurPokerHand.ONE_PAIR4),
-                                                handVals[0].get(OurPokerHand.STRAIGHT_FLUSH4)))))));
-        handVals[0].put(OurPokerHand.STRAIGHT_FLUSH3,
-                Math.max(handVals[0].get(OurPokerHand.STRAIGHT4), Math.max(handVals[0].get(OurPokerHand.FLUSH4),
-                                Math.max(handVals[0].get(OurPokerHand.HIGH_CARD4),
-                                        (Math.max(handVals[0].get(OurPokerHand.ONE_PAIR4),
-                                                handVals[0].get(OurPokerHand.STRAIGHT_FLUSH4)))))));
-        handVals[0].put(OurPokerHand.INSIDE_STRAIGHT_FLUSH3, handVals[0].get(OurPokerHand.STRAIGHT_FLUSH3));
-        handVals[0].put(OurPokerHand.FLUSH3, Math.max(handVals[0].get(OurPokerHand.FLUSH4),
-                Math.max(handVals[0].get(OurPokerHand.HIGH_CARD4),
-                        handVals[0].get(OurPokerHand.ONE_PAIR4))));
-        handVals[0].put(OurPokerHand.STRAIGHT3, Math.max(handVals[0].get(OurPokerHand.STRAIGHT4),
-                Math.max(handVals[0].get(OurPokerHand.HIGH_CARD4),
-                        handVals[0].get(OurPokerHand.ONE_PAIR4))));
-        handVals[0].put(OurPokerHand.INSIDE_STRAIGHT3, handVals[0].get(OurPokerHand.STRAIGHT3));
-        handVals[0].put(OurPokerHand.THREE_OF_A_KIND3, Math.max(handVals[0].get(OurPokerHand.THREE_OF_A_KIND4),
-                handVals[0].get(OurPokerHand.FOUR_OF_A_KIND4)));
-        handVals[0].put(OurPokerHand.ONE_PAIR3, Math.max(handVals[0].get(OurPokerHand.THREE_OF_A_KIND4),
-                Math.max(handVals[0].get(OurPokerHand.ONE_PAIR4),
-                        handVals[0].get(OurPokerHand.TWO_PAIR4))));
-        handVals[0].put(OurPokerHand.HIGH_CARD3, Math.max(handVals[0].get(OurPokerHand.HIGH_CARD4),
-                handVals[0].get(OurPokerHand.ONE_PAIR4)));
+        // 3-card hands
+        handVals.put(0, OurPokerHand.ROYAL_FLUSH3, Math.max(handVals.get(0, OurPokerHand.ROYAL_FLUSH4),
+                Math.max(handVals.get(0, OurPokerHand.STRAIGHT4), Math.max(handVals.get(0, OurPokerHand.FLUSH4),
+                                Math.max(handVals.get(0, OurPokerHand.HIGH_CARD4),
+                                        Math.max(handVals.get(0, OurPokerHand.ONE_PAIR4),
+                                                handVals.get(0, OurPokerHand.STRAIGHT_FLUSH4)))))));
+        handVals.put(0, OurPokerHand.STRAIGHT_FLUSH3,
+                Math.max(handVals.get(0, OurPokerHand.STRAIGHT4), Math.max(handVals.get(0, OurPokerHand.FLUSH4),
+                                Math.max(handVals.get(0, OurPokerHand.HIGH_CARD4),
+                                        (Math.max(handVals.get(0, OurPokerHand.ONE_PAIR4),
+                                                handVals.get(0, OurPokerHand.STRAIGHT_FLUSH4)))))));
+        handVals.put(0, OurPokerHand.INSIDE_STRAIGHT_FLUSH3, handVals.get(0, OurPokerHand.STRAIGHT_FLUSH3));
+        handVals.put(0, OurPokerHand.FLUSH3, Math.max(handVals.get(0, OurPokerHand.FLUSH4),
+                Math.max(handVals.get(0, OurPokerHand.HIGH_CARD4),
+                        handVals.get(0, OurPokerHand.ONE_PAIR4))));
+        handVals.put(0, OurPokerHand.STRAIGHT3, Math.max(handVals.get(0, OurPokerHand.STRAIGHT4),
+                Math.max(handVals.get(0, OurPokerHand.HIGH_CARD4),
+                        handVals.get(0, OurPokerHand.ONE_PAIR4))));
+        handVals.put(0, OurPokerHand.INSIDE_STRAIGHT3, handVals.get(0, OurPokerHand.STRAIGHT3));
+        handVals.put(0, OurPokerHand.THREE_OF_A_KIND3, Math.max(handVals.get(0, OurPokerHand.THREE_OF_A_KIND4),
+                handVals.get(0, OurPokerHand.FOUR_OF_A_KIND4)));
+        handVals.put(0, OurPokerHand.ONE_PAIR3, Math.max(handVals.get(0, OurPokerHand.THREE_OF_A_KIND4),
+                Math.max(handVals.get(0, OurPokerHand.ONE_PAIR4),
+                        handVals.get(0, OurPokerHand.TWO_PAIR4))));
+        handVals.put(0, OurPokerHand.HIGH_CARD3, Math.max(handVals.get(0, OurPokerHand.HIGH_CARD4),
+                handVals.get(0, OurPokerHand.ONE_PAIR4)));
 
-        // 2-card hands to be evaluated for max potential socre
-        handVals[0].put(OurPokerHand.ROYAL_FLUSH2, Math.max(handVals[0].get(OurPokerHand.ROYAL_FLUSH3),
-                Math.max(handVals[0].get(OurPokerHand.STRAIGHT3), Math.max(handVals[0].get(OurPokerHand.FLUSH3),
-                                Math.max(handVals[0].get(OurPokerHand.HIGH_CARD3),
-                                        Math.max(handVals[0].get(OurPokerHand.ONE_PAIR3),
-                                                handVals[0].get(OurPokerHand.STRAIGHT_FLUSH3)))))));
-        handVals[0].put(OurPokerHand.STRAIGHT_FLUSH2,
-                Math.max(handVals[0].get(OurPokerHand.STRAIGHT3), Math.max(handVals[0].get(OurPokerHand.FLUSH3),
-                                Math.max(handVals[0].get(OurPokerHand.HIGH_CARD3),
-                                        (Math.max(handVals[0].get(OurPokerHand.ONE_PAIR3),
-                                                handVals[0].get(OurPokerHand.STRAIGHT_FLUSH3)))))));
-        handVals[0].put(OurPokerHand.INSIDE_STRAIGHT_FLUSH2, handVals[0].get(OurPokerHand.STRAIGHT_FLUSH2));
-        handVals[0].put(OurPokerHand.FLUSH2, Math.max(handVals[0].get(OurPokerHand.FLUSH3),
-                Math.max(handVals[0].get(OurPokerHand.HIGH_CARD3),
-                        handVals[0].get(OurPokerHand.ONE_PAIR3))));
-        handVals[0].put(OurPokerHand.STRAIGHT2, Math.max(handVals[0].get(OurPokerHand.STRAIGHT3),
-                Math.max(handVals[0].get(OurPokerHand.HIGH_CARD3),
-                        handVals[0].get(OurPokerHand.ONE_PAIR3))));
-        handVals[0].put(OurPokerHand.INSIDE_STRAIGHT2, handVals[0].get(OurPokerHand.STRAIGHT2));
-        handVals[0].put(OurPokerHand.ONE_PAIR2, Math.max(handVals[0].get(OurPokerHand.THREE_OF_A_KIND3),
-                handVals[0].get(OurPokerHand.ONE_PAIR3)));
-        handVals[0].put(OurPokerHand.HIGH_CARD2, Math.max(handVals[0].get(OurPokerHand.HIGH_CARD3),
-                handVals[0].get(OurPokerHand.ONE_PAIR3)));
+        // 2-card hands
+        handVals.put(0, OurPokerHand.ROYAL_FLUSH2, Math.max(handVals.get(0, OurPokerHand.ROYAL_FLUSH3),
+                Math.max(handVals.get(0, OurPokerHand.STRAIGHT3), Math.max(handVals.get(0, OurPokerHand.FLUSH3),
+                                Math.max(handVals.get(0, OurPokerHand.HIGH_CARD3),
+                                        Math.max(handVals.get(0, OurPokerHand.ONE_PAIR3),
+                                                handVals.get(0, OurPokerHand.STRAIGHT_FLUSH3)))))));
+        handVals.put(0, OurPokerHand.STRAIGHT_FLUSH2,
+                Math.max(handVals.get(0, OurPokerHand.STRAIGHT3), Math.max(handVals.get(0, OurPokerHand.FLUSH3),
+                                Math.max(handVals.get(0, OurPokerHand.HIGH_CARD3),
+                                        (Math.max(handVals.get(0, OurPokerHand.ONE_PAIR3),
+                                                handVals.get(0, OurPokerHand.STRAIGHT_FLUSH3)))))));
+        handVals.put(0, OurPokerHand.INSIDE_STRAIGHT_FLUSH2, handVals.get(0, OurPokerHand.STRAIGHT_FLUSH2));
+        handVals.put(0, OurPokerHand.FLUSH2, Math.max(handVals.get(0, OurPokerHand.FLUSH3),
+                Math.max(handVals.get(0, OurPokerHand.HIGH_CARD3),
+                        handVals.get(0, OurPokerHand.ONE_PAIR3))));
+        handVals.put(0, OurPokerHand.STRAIGHT2, Math.max(handVals.get(0, OurPokerHand.STRAIGHT3),
+                Math.max(handVals.get(0, OurPokerHand.HIGH_CARD3),
+                        handVals.get(0, OurPokerHand.ONE_PAIR3))));
+        handVals.put(0, OurPokerHand.INSIDE_STRAIGHT2, handVals.get(0, OurPokerHand.STRAIGHT2));
+        handVals.put(0, OurPokerHand.ONE_PAIR2, Math.max(handVals.get(0, OurPokerHand.THREE_OF_A_KIND3),
+                handVals.get(0, OurPokerHand.ONE_PAIR3)));
+        handVals.put(0, OurPokerHand.HIGH_CARD2, Math.max(handVals.get(0, OurPokerHand.HIGH_CARD3),
+                handVals.get(0, OurPokerHand.ONE_PAIR3)));
 
-        // Zero or one card hands to be evaluated for maximum potential score
-        handVals[0].put(OurPokerHand.ONE_CARD, Math.max(handVals[0].get(OurPokerHand.ROYAL_FLUSH2),
-                Math.max(handVals[0].get(OurPokerHand.STRAIGHT2), Math.max(handVals[0].get(OurPokerHand.FLUSH2),
-                                Math.max(handVals[0].get(OurPokerHand.HIGH_CARD2),
-                                        Math.max(handVals[0].get(OurPokerHand.ONE_PAIR2),
-                                                handVals[0].get(OurPokerHand.STRAIGHT_FLUSH2)))))));
-        handVals[0].put(OurPokerHand.ZERO_CARDS, handVals[0].get(OurPokerHand.ONE_CARD));
+        // Zero or one card hands
+        handVals.put(0, OurPokerHand.ONE_CARD, Math.max(handVals.get(0, OurPokerHand.ROYAL_FLUSH2),
+                Math.max(handVals.get(0, OurPokerHand.STRAIGHT2), Math.max(handVals.get(0, OurPokerHand.FLUSH2),
+                                Math.max(handVals.get(0, OurPokerHand.HIGH_CARD2),
+                                        Math.max(handVals.get(0, OurPokerHand.ONE_PAIR2),
+                                                handVals.get(0, OurPokerHand.STRAIGHT_FLUSH2)))))));
+        handVals.put(0, OurPokerHand.ZERO_CARDS, handVals.get(0, OurPokerHand.ONE_CARD));
 
         // Clone the handVals for the other 24 turns
-        for (int i = 1; i < handVals.length; i++) {
-            handVals[i] = (HashMap<OurPokerHand, Integer>) handVals[0].clone();
-        }
+        handVals.cloneAllTurns();
 
         adjustHandVals(endTime);
     }
@@ -349,23 +344,22 @@ public class SRulerPlayer implements PokerSquaresPlayer {
      */
     private void adjustHandVals(long endTime) {
         // current holds the current value of handVals
-        HashMap<OurPokerHand, Integer>[] current
-                = (HashMap<OurPokerHand, Integer>[]) handVals.clone();
+        HandValues current = handVals.deepClone();
 
         // Save best value seen
-        HashMap<OurPokerHand, Integer>[] bestHandVals
-                = (HashMap<OurPokerHand, Integer>[]) handVals.clone();
+        HandValues bestHandVals = handVals.deepClone();
         double bestValue, worstValue;
-        bestValue = worstValue = srEvaluate(handVals);
+        bestValue = worstValue = srEvaluate(handVals, 1);
         System.out.println("Initial best/worst: " + bestValue);
+        
+        int currentM = 1; // # comparisons required before accepting a new set of handVals
 
         // Find least valuable hand and max value per partial hand
         int leastValHand = Integer.MAX_VALUE;
-        HashMap<OurPokerHand, Integer>[] handValCap
-                = (HashMap<OurPokerHand, Integer>[]) handVals.clone();
-        for (OurPokerHand thisHand : handVals[0].keySet()) {
-            if (handVals[0].get(thisHand) < leastValHand) {
-                leastValHand = handVals[0].get(thisHand);
+        HandValues handValCap = handVals.deepClone();
+        for (OurPokerHand thisHand : OurPokerHand.values()) {
+            if (handVals.get(0, thisHand) < leastValHand) {
+                leastValHand = handVals.get(0, thisHand);
             }
         }
 
@@ -375,74 +369,87 @@ public class SRulerPlayer implements PokerSquaresPlayer {
         int iter = 0;
         while (System.currentTimeMillis() < endTime) {
             iter++;
+            if (iter % 100 == 0) System.out.println(iter);
             // Find a neighbor
-            HashMap<OurPokerHand, Integer>[] neighbor
-                    = (HashMap<OurPokerHand, Integer>[]) current.clone();
+            HandValues neighbor = current.deepClone();
 
-            for (int i = 0; i < neighbor.length; i++) {
-                for (OurPokerHand thisHand : neighbor[i].keySet()) {
+            for (int i = 0; i < neighbor.size(); i++) {
+                for (OurPokerHand thisHand : OurPokerHand.values()) {
                     if (thisHand.ordinal() >= 10
                             && random.nextInt(100) > ((double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime) * 50)) {
                         // sets new values for partial hands to test the "neighbors"
                         int interval = (int) (((double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime)) * 20) + 2;
-                        int newVal = neighbor[i].get(thisHand) + random.nextInt(interval) - (interval / 2);
+                        int newVal = neighbor.get(i, thisHand) + random.nextInt(interval) - (interval / 2);
                         // the new values for the neighbor can only ever be modified between -128-127
                         newVal = Math.min(newVal, 127);
                         newVal = Math.max(newVal, -128);
                         // assigns a value to the newly created neighbor
-                        neighbor[i].put(thisHand, newVal);
+                        neighbor.put(i, thisHand, newVal);
                     }
                 }
             }
-
-            // Evaluate the neighbor to test if it is "good"
-            double neighborVal = srEvaluate(neighbor);
+            
+            boolean acceptNeighbor = true;
+            double neighborVal = 0.0, neighborValTotal = 0.0;
+            int neighborValCount = 0;
+            if (iter > 1000)
+                currentM = (int) Math.log10(iter) - 2;
+            for (int i = 0; i < currentM; i++) {
+                // Evaluate the neighbor to test if it is "good"
+                neighborVal = srEvaluate(neighbor, 1);
+                neighborValTotal += neighborVal;
+                neighborValCount++;
+                int theta = random.nextInt((int) (bestValue - worstValue + 1)) + (int) worstValue;
+                
+                if (neighborVal < theta) {
+                    acceptNeighbor = false;                
+                    break;
+                }
+            }
 
             // If neighbor returns good values, use the neighbor
-            int theta = random.nextInt((int) (bestValue - worstValue + 1)) + (int) worstValue;
-            if (neighborVal > theta) {
-                current = (HashMap<OurPokerHand, Integer>[]) neighbor;
+            if (acceptNeighbor) {
+                System.out.println("moved");
+                current = (HandValues) neighbor;
             }
 
             // If neighbor returns the best value, save it
-            if (neighborVal > (bestValue * .8 + srEvaluate(bestHandVals) *.2)) {
+            if (((double)neighborValTotal/neighborValCount) > (bestValue *.8 + srEvaluate(bestHandVals, 1)*.2) 
+                    && (neighborVal = srEvaluate(neighbor, 100)) > bestValue) {
                 // saves the best hand values
-                bestHandVals = (HashMap<OurPokerHand, Integer>[]) neighbor.clone();
+                bestHandVals = neighbor.deepClone();
                 bestValue = neighborVal;
                 System.out.println("******************************************************** iter: " + iter + "\t%time elapsed: " + 100 * (double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime));
                 System.out.println("New best: " + bestValue + " " + bestHandVals);
             }
+            
 
             if (neighborVal < worstValue) {
                 worstValue = neighborVal;
             }
         }
-        handVals = (HashMap<OurPokerHand, Integer>[]) bestHandVals;
+        handVals = (HandValues) bestHandVals;
 
-        System.out.println(
-                "best");
+        System.out.println("best");
         System.out.println(bestHandVals);
     }
-    /*
-    
-     */
 
-    private double srEvaluate(HashMap<OurPokerHand, Integer>[] values) {
+    private double srEvaluate(HandValues values, int iter) {
         // saves the original hand values
-        HashMap<OurPokerHand, Integer>[] original = handVals;
+        HandValues original = handVals;
         // takes in the new hand values
         handVals = values;
         int total = 0;
         init();
-        // simulates a game of pokersquares using the neighbors valuea
-        for (int i = 0; i < 100; i++) {
+        // simulates a game of pokersquares using the neighbors value
+        for (int i = 0; i < iter; i++) {
             int result = simGreedyPlay(25);
             total += result;
             init();
         }
         // resets the hand values toc the original
         handVals = original;
-        return total / 100.0;
+        return (double) total / iter;
     }
 
     /* (non-Javadoc)
@@ -460,14 +467,14 @@ public class SRulerPlayer implements PokerSquaresPlayer {
             for (int col = 0; col < SIZE; col++) {
                 hand[col] = grid[row][col];
             }
-            handScores[row] = handVals[turn].get(OurPokerHand.getPokerHand(hand));
+            handScores[row] = handVals.get(turn, OurPokerHand.getPokerHand(hand));
         }
         for (int col = 0; col < SIZE; col++) {
             Card[] hand = new Card[SIZE];
             for (int row = 0; row < SIZE; row++) {
                 hand[row] = grid[row][col];
             }
-            handScores[SIZE + col] = handVals[turn].get(OurPokerHand.getPokerHand(hand));
+            handScores[SIZE + col] = handVals.get(turn, OurPokerHand.getPokerHand(hand));
         }
 
         int totalScore = 0;
@@ -484,7 +491,7 @@ public class SRulerPlayer implements PokerSquaresPlayer {
      * @return score of given Card hand.
      */
     public int getHandScore(Card[] hand, int turn) {
-        return handVals[turn].get(OurPokerHand.getPokerHand(hand));
+        return handVals.get(turn, OurPokerHand.getPokerHand(hand));
     }
 
     /**
