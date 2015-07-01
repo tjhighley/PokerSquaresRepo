@@ -313,7 +313,7 @@ public class PokerSquares {
 		// Demonstration of tournament evaluation (3 players, 2 point systems, 100 x 30s games for each of the 3*2=6 player-system pairs) 
 		System.out.println("\n\nTournament evaluation demo:");
 		ArrayList<PokerSquaresPlayer> players = new ArrayList<>();
-                players.add(new GAPlayer(25, 500, true, true));		                                                
+                players.add(new GAPlayer(25, 500, 2, true));		                                                
 //                players.add(new SRulerPlayer(25));  
 //                players.add(new SRulerPlayer(5));
 //		players.add(new RandomPlayer());

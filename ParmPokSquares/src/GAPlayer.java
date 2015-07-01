@@ -23,7 +23,7 @@ public class GAPlayer implements PokerSquaresPlayer {
     // (This avoids constant allocation/deallocation of such lists during the greedy selections of MC simulations.)
     
     private int popSize;
-    private boolean mutationOn = true;
+    private int numMutations = 2;
     private boolean crossoverOn = true;
     
     private HandValues handVals = new HandValues();
@@ -45,9 +45,9 @@ public class GAPlayer implements PokerSquaresPlayer {
         this.popSize = popSize;
     }
     
-    public GAPlayer(int depthLimit, int popSize, boolean mutationOn, boolean crossoverOn) {
+    public GAPlayer(int depthLimit, int popSize, int numMutations, boolean crossoverOn) {
         this(depthLimit, popSize);
-        this.mutationOn = mutationOn;
+        this.numMutations = numMutations;
         this.crossoverOn = crossoverOn;
     }
 
@@ -409,9 +409,9 @@ public class GAPlayer implements PokerSquaresPlayer {
 
             // Mutation
             // For each new child, choose 2 handvals and change at random (leaving best unchanged)
-            if (mutationOn) {
+            if (numMutations > 0) {
                 for (int i = popSize / 20; i < popSize; i++) {
-                    for (int j = 0; j < 2; j++) {
+                    for (int j = 0; j < numMutations; j++) {
                         int handIndex = random.nextInt(OurPokerHand.INSIDE_STRAIGHT_FLUSH2.ordinal() - OurPokerHand.HIGH_CARD4.ordinal())
                                 + OurPokerHand.HIGH_CARD4.ordinal();
                         int playIndex = random.nextInt(25);
