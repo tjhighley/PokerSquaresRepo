@@ -25,10 +25,11 @@ public class SRulerPlayer extends OurPlayer implements PokerSquaresPlayer {
         // Save best value seen
         HandValues bestHandVals = handVals.deepClone();
         double bestValue, worstValue;
-        bestValue = worstValue = srEvaluate(handVals, 1);
+        bestValue = worstValue = srEvaluate(handVals, 100);
         System.out.println("Initial best/worst: " + bestValue);
         
-        int currentM = 1; // # comparisons required before accepting a new set of handVals
+        int currentM = 2; // # comparisons required before accepting a new set of handVals
+        int bumpM = 100; // Iteration at which to next increase currentM
 
         // Find least valuable hand and max value per partial hand
         int leastValHand = Integer.MAX_VALUE;
@@ -45,7 +46,8 @@ public class SRulerPlayer extends OurPlayer implements PokerSquaresPlayer {
         int iter = 0;
         while (System.currentTimeMillis() < endTime) {
             iter++;
-            if (iter % 1000 == 0) System.out.println(iter);
+            if (iter % 1000 == 0) 
+                System.out.println(iter + "\t%time elapsed: " + 100 * (double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime));
             // Find a neighbor
             HandValues neighbor = current.deepClone();
 
@@ -54,13 +56,14 @@ public class SRulerPlayer extends OurPlayer implements PokerSquaresPlayer {
                     if (thisHand.ordinal() >= 10
                             && random.nextInt(100) > ((double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime) * 50)) {
                         // sets new values for partial hands to test the "neighbors"
-                        int interval = (int) (((double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime)) * 20) + 2;
-                        int newVal = neighbor.get(i, thisHand) + random.nextInt(interval) - (interval / 2);
+                        //int interval = (int) (((double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime)) * 20) + 2;
+                        int interval = 40;
+                        int newVal = neighbor.get(i*10+1, thisHand) + random.nextInt(interval) - (interval / 2);
                         // the new values for the neighbor can only ever be modified between -128-127
                         newVal = Math.min(newVal, 127);
                         newVal = Math.max(newVal, -128);
                         // assigns a value to the newly created neighbor
-                        neighbor.put(i, thisHand, newVal);
+                        neighbor.put(i*10+1, thisHand, newVal);
                     }
                 }
             }
@@ -68,16 +71,20 @@ public class SRulerPlayer extends OurPlayer implements PokerSquaresPlayer {
             boolean acceptNeighbor = true;
             double neighborVal = 0.0, neighborValTotal = 0.0;
             int neighborValCount = 0;
-            if (iter > 1000)
-                currentM = (int) Math.log10(iter) - 2;
+            
+            if (iter == bumpM) {
+                currentM++;
+                bumpM *= 5;
+                System.out.println("New M: " + currentM);
+            }
             for (int i = 0; i < currentM; i++) {
                 // Evaluate the neighbor to test if it is "good"
-                neighborVal = srEvaluate(neighbor, 1);
+                neighborVal = srEvaluate(neighbor, 10);
                 neighborValTotal += neighborVal;
                 neighborValCount++;
                 int theta = random.nextInt((int) (bestValue - worstValue + 1)) + (int) worstValue;
                 
-                if (neighborVal < theta) {
+                if (theta > neighborVal) {
                     acceptNeighbor = false;                
                     break;
                 }
@@ -85,13 +92,14 @@ public class SRulerPlayer extends OurPlayer implements PokerSquaresPlayer {
 
             // If neighbor returns good values, use the neighbor
             if (acceptNeighbor) {
-                //System.out.println("moved");
+                System.out.print(".");
                 current = (HandValues) neighbor;
             }
 
             // If neighbor returns the best value, save it
-            if (((double)neighborValTotal/neighborValCount) > (bestValue *.8 + srEvaluate(bestHandVals, 1)*.2) 
-                    && (neighborVal = srEvaluate(neighbor, 100)) > bestValue) {
+            if (acceptNeighbor
+                    && ((double)neighborValTotal/neighborValCount) > srEvaluate(bestHandVals, 10) 
+                    && (neighborVal = srEvaluate(neighbor, 500)) > srEvaluate(bestHandVals, 500)) {
                 // saves the best hand values
                 bestHandVals = neighbor.deepClone();
                 bestValue = neighborVal;

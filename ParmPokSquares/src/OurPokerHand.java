@@ -140,7 +140,7 @@ public enum OurPokerHand {
             }
 
             if (maxKind - minKind <= 4) {
-                hasInsideStraight = false;
+                hasInsideStraight = true;
             }
         }
 
@@ -245,7 +245,7 @@ public enum OurPokerHand {
             }
 
             if (maxKind - minKind <= 4) {
-                hasInsideStraight = false;
+                hasInsideStraight = true;
             }
         }
 
@@ -353,7 +353,7 @@ public enum OurPokerHand {
             }
 
             if (maxKind - minKind <= 4) {
-                hasInsideStraight = false;
+                hasInsideStraight = true;
             }
         }
 

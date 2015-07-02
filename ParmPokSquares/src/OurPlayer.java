@@ -2,7 +2,7 @@
 import java.util.ArrayList;
 import java.util.Random;
 
-public abstract class OurPlayer implements PokerSquaresPlayer {
+public class OurPlayer implements PokerSquaresPlayer {
 
     protected final int SIZE = 5; // number of rows/columns in square grid
     protected final int NUM_POS = SIZE * SIZE; // number of positions in square grid
@@ -22,8 +22,6 @@ public abstract class OurPlayer implements PokerSquaresPlayer {
     // (This avoids constant allocation/deallocation of such lists during the greedy selections of MC simulations.)
       
     protected HandValues handVals = new HandValues();
-
-    protected abstract void adjustHandVals(long endTime);
 
     /**
      * Create a Greedy Monte Carlo player that simulates greedy play to depth 2.
@@ -152,6 +150,10 @@ public abstract class OurPlayer implements PokerSquaresPlayer {
         handVals.cloneAllTurns();
 
         adjustHandVals(endTime);
+    }
+    
+    protected void adjustHandVals(long endTime) {
+        
     }
 
     /* (non-Javadoc)
@@ -331,52 +333,6 @@ public abstract class OurPlayer implements PokerSquaresPlayer {
     }
 
     
-    private HandValues get5050Child(HandValues parent1, HandValues parent2) {
-        HandValues result = (HandValues) parent1.deepClone();
-
-        for (int i = OurPokerHand.HIGH_CARD4.ordinal();
-                i <= OurPokerHand.ZERO_CARDS.ordinal(); i++) {
-            if (random.nextBoolean()) {
-                for (int j = 0; j < 3; j++) {
-                    result.put(j*10 + 1, OurPokerHand.values()[i], parent2.get(j * 10 + 1, OurPokerHand.values()[i]));
-                }
-            }
-        }
-        return result;
-    }
-
-    private HandValues getRandomHandValues(HandValues initial) {
-        HandValues result = (HandValues) initial.deepClone();
-
-        for (int i = OurPokerHand.HIGH_CARD4.ordinal();
-                i <= OurPokerHand.ZERO_CARDS.ordinal(); i++) {
-            int change = random.nextInt(21) - 10;
-            for (int j = 0; j < 3; j++) {
-                int newVal = initial.get(j*10 + 1, OurPokerHand.values()[i]) + change;
-                newVal = Math.min(127, newVal);
-                newVal = Math.max(-128, newVal);
-                result.put(j*10 + 1, OurPokerHand.values()[i], newVal);
-            }
-        }        
-        return result;
-    }
-
-    private double evalPartialHands(HandValues values) {
-        HandValues original = handVals;
-        handVals = values;
-        int total = 0;
-        init();
-        for (int i = 0; i < 10; i++) {
-            int result = simGreedyPlay(25);
-            total += result;
-            //System.out.print("Play " + i + ": " + result + "; ");
-            init();
-        }
-        //System.out.println();
-        handVals = original;
-        return total / 10.0;
-    }
-
     /* (non-Javadoc)
      * @see PokerSquaresPlayer#getName()
      */
