@@ -20,7 +20,7 @@ public class OurPlayer implements PokerSquaresPlayer {
     // onward, we maintain a list of undealt cards for MC simulation.
     protected int[][] legalPlayLists = new int[NUM_POS][NUM_POS]; // stores legal play lists indexed by numPlays (depth)
     // (This avoids constant allocation/deallocation of such lists during the greedy selections of MC simulations.)
-      
+
     protected HandValues handVals = new HandValues();
 
     /**
@@ -35,10 +35,10 @@ public class OurPlayer implements PokerSquaresPlayer {
      *
      * @param depthLimit depth limit for random greedy simulated play
      */
-    public OurPlayer(int depthLimit) {        
-        this.depthLimit = depthLimit;        
+    public OurPlayer(int depthLimit) {
+        this.depthLimit = depthLimit;
     }
-    
+
     @Override
     public void setPointSystem(PokerSquaresPointSystem system, long millis) {
         long startTime = System.currentTimeMillis();
@@ -151,9 +151,9 @@ public class OurPlayer implements PokerSquaresPlayer {
 
         adjustHandVals(endTime);
     }
-    
+
     protected void adjustHandVals(long endTime) {
-        
+
     }
 
     /* (non-Javadoc)
@@ -202,8 +202,41 @@ public class OurPlayer implements PokerSquaresPlayer {
 
         if (numPlays == 0) { // trivial first play
             plays[0] = 0;
-        }
-        if (numPlays < 24) { // not the forced last play
+        } else if (numPlays == 1) { // nearly trivial second play
+            // compute average time per move evaluation
+            int remainingPlays = NUM_POS - numPlays; // ignores triviality of last play to keep a conservative margin for game completion
+            long millisPerPlay = millisRemaining / remainingPlays; // dividing time evenly with future getPlay() calls
+            long millisPerMoveEval = millisPerPlay / remainingPlays; // dividing time evenly across moves now considered
+            int bestPlay = 0;
+
+            double maxAverageScore = Double.NEGATIVE_INFINITY; // maximum average score found for moves so far            
+
+            // Only consider two options: playing in the same column or not
+            for (int i = 5; i <= 6; i++) {
+                long startTime = System.currentTimeMillis();
+                long endTime = startTime + millisPerMoveEval; // compute when MC simulations should end
+                makePlay(card, i / SIZE, i % SIZE);  // play the card at the empty position
+                int simCount = 0;
+                int scoreTotal = 0;
+
+                while (System.currentTimeMillis() < endTime) { // perform as many MC simulations as possible through the allotted time
+                    // Perform a Monte Carlo simulation of greedy play to the depth limit or game end, whichever comes first.
+                    scoreTotal += simGreedyPlay(depthLimit);  // accumulate MC simulation scores
+                    simCount++; // increment count of MC simulations
+                }
+                undoPlay(); // undo the play under evaluation
+                // update (if necessary) the maximum average score and the list of best plays
+                double averageScore = (double) scoreTotal / simCount;
+                if (averageScore >= maxAverageScore) {
+                    maxAverageScore = averageScore;
+                    if (averageScore > maxAverageScore)
+                        bestPlay = i;
+                    else if (random.nextInt(1) == 1)
+                        bestPlay = i;
+                }
+            }
+            plays[numPlays] = bestPlay;
+        } else if (numPlays < 24) { // not the forced last play
             // compute average time per move evaluation
             int remainingPlays = NUM_POS - numPlays; // ignores triviality of last play to keep a conservative margin for game completion
             long millisPerPlay = millisRemaining / remainingPlays; // dividing time evenly with future getPlay() calls
@@ -280,7 +313,7 @@ public class OurPlayer implements PokerSquaresPlayer {
                 ArrayList<Integer> bestPlays = new ArrayList<Integer>();
                 for (int i = 0; i < remainingPlays; i++) {
                     int play = legalPlayLists[numPlays][i];
-                    makePlay(card, play / SIZE, play % SIZE);                    
+                    makePlay(card, play / SIZE, play % SIZE);
                     score = evalGrid(grid, numPlays - 1);
                     if (score >= maxScore) {
                         if (score > maxScore) {
@@ -332,7 +365,6 @@ public class OurPlayer implements PokerSquaresPlayer {
         grid[play / SIZE][play % SIZE] = null;
     }
 
-    
     /* (non-Javadoc)
      * @see PokerSquaresPlayer#getName()
      */

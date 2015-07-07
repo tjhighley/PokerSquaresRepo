@@ -104,7 +104,7 @@ public class SRulerPlayer extends OurPlayer implements PokerSquaresPlayer {
                 bestHandVals = neighbor.deepClone();
                 bestValue = neighborVal;
                 System.out.println("******************************************************** iter: " + iter + "\t%time elapsed: " + 100 * (double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime));
-                System.out.println("New best: " + bestValue + " " + bestHandVals);
+                System.out.println("New best: \n" + bestValue + " " + bestHandVals);
             }
             
 
@@ -114,7 +114,7 @@ public class SRulerPlayer extends OurPlayer implements PokerSquaresPlayer {
         }
         handVals = (HandValues) bestHandVals;
 
-        System.out.println("best");
+        System.out.println("best:\n");
         System.out.println(bestHandVals);
     }
 

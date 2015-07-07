@@ -315,14 +315,14 @@ public class PokerSquares {
 		ArrayList<PokerSquaresPlayer> players = new ArrayList<>();
 //                players.add(new GAPlayer(25, 500, 2, true));	                                                
 //                players.add(new GAPlayer(25, 400, 2, true));	                                                
-//                players.add(new GAPlayer(25, 300, 2, true));	                                                
-//                players.add(new GAPlayer(25, 500, 10, true));	                                                
-                players.add(new GAPlayer(25, 400, 10, true));	                                                
-//                players.add(new GAPlayer(25, 300, 10, true));	                                                
+//                players.add(new GAPlayer(25, 50, 2, true));	                                                
+                players.add(new GAPlayer(25, 50, 2, true));	                                                
+//                players.add(new GAPlayer(25, 960, 2, true));	                                                
+                players.add(new GAPlayer(25, 300, 2, true));	                                                
 //                players.add(new SRulerPlayer(25));      
 //                players.add(new OurPlayer(25));
-		players.add(new RandomPlayer());
-//		players.add(new GreedyMCPlayer(25));
+//		players.add(new RandomPlayer());
+		players.add(new GreedyMCPlayer(25));
 		ArrayList<PokerSquaresPointSystem> systems = new ArrayList<>();
 		PokerSquaresPointSystem.setSeed(0L);
 //		systems.add(system);
@@ -337,9 +337,9 @@ public class PokerSquares {
 //		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.ONE_PAIR.id));
 //		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.TWO_PAIR.id));
 //		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.THREE_OF_A_KIND.id));
-		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.STRAIGHT.id));
-//		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.FLUSH.id));
+//		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.STRAIGHT.id));
+		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.FLUSH.id));
 //		systems.add(PokerSquaresPointSystem.getSingleHandPointSystem(PokerHand.FULL_HOUSE.id));                
-		PokerSquares.playTournament(players, systems, 2, 0L); // use fewer games per system for faster testing
+		PokerSquares.playTournament(players, systems, 3, 0L); // use fewer games per system for faster testing
 	}
 }

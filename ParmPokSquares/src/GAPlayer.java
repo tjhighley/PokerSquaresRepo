@@ -1,6 +1,7 @@
 public class GAPlayer extends OurPlayer implements PokerSquaresPlayer {
    
     private int popSize;
+    private int numElites;
     private int numMutations = 2;
     private boolean crossoverOn = true;
     
@@ -19,6 +20,7 @@ public class GAPlayer extends OurPlayer implements PokerSquaresPlayer {
     public GAPlayer(int depthLimit, int popSize) {        
         this.depthLimit = depthLimit;
         this.popSize = popSize;
+        this.numElites = popSize / 20;
     }
     
     public GAPlayer(int depthLimit, int popSize, int numMutations, boolean crossoverOn) {
@@ -37,7 +39,7 @@ public class GAPlayer extends OurPlayer implements PokerSquaresPlayer {
         // 1. Unchanged (half)     
         // 2. Truly random (all others)
         GAPopulation population = new GAPopulation(popSize);
-        for (int i = 0; i < popSize / 2; i++) {
+        for (int i = 0; i < popSize; i++) {
             population.add(i, handVals.deepClone());
         }
         System.out.println(population.toString(0));
@@ -53,14 +55,14 @@ public class GAPlayer extends OurPlayer implements PokerSquaresPlayer {
         // Generate new generations
         while (System.currentTimeMillis() < endTime) {
             iter++;
-            if (iter % 100 == 0) {
-                System.out.println(iter);
+            if (iter % 10 == 0) {
+                System.out.println(iter + "\t%time elapsed: " + 100 * (double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime));
                 System.out.println(population.toString(0));
             }
 
             // Evaluate each member of this generation
             for (int i = 0; i < popSize; i++) {
-                population.updateValue(i, evalPartialHands(population.get(i)));
+                population.updateValue(i, evalPartialHands(population.get(i), 50));
             }
 
             // Sort
@@ -69,13 +71,13 @@ public class GAPlayer extends OurPlayer implements PokerSquaresPlayer {
             // New generation
             GAPopulation newGeneration = new GAPopulation(popSize);
 
-            // Keep the best 5% unchanged
-            for (int i = 0; i < popSize / 20; i++) {
+            // Keep the best unchanged
+            for (int i = 0; i < numElites; i++) {
                 newGeneration.add(i, population.get(i));
             }
 
             // popSize Children in next generation
-            for (int i = popSize / 20; i < popSize; i++) {
+            for (int i = numElites; i < popSize; i++) {
                 //Choose two parents (lower-ranked are only in the pool for the early children)
                 int parent1 = random.nextInt(popSize - i + 1);
                 int parent2 = random.nextInt(popSize - i + 1);
@@ -88,15 +90,15 @@ public class GAPlayer extends OurPlayer implements PokerSquaresPlayer {
                     newGeneration.add(i, newChild);
                 } else {
                     // 
-                    newGeneration.add(i, population.get(i - popSize / 20));
+                    newGeneration.add(i, population.get(i - numElites));
                 }
                 
             }
 
             // Mutation
-            // For each new child, choose 2 handvals and change at random (leaving best unchanged)
+            // For each new child (except elites), choose handvals and change at random
             if (numMutations > 0) {
-                for (int i = popSize / 20; i < popSize; i++) {
+                for (int i = numElites; i < popSize; i++) {
                     for (int j = 0; j < numMutations; j++) {
                         int handIndex = random.nextInt(OurPokerHand.INSIDE_STRAIGHT_FLUSH2.ordinal() - OurPokerHand.HIGH_CARD4.ordinal())
                                 + OurPokerHand.HIGH_CARD4.ordinal();
@@ -147,12 +149,12 @@ public class GAPlayer extends OurPlayer implements PokerSquaresPlayer {
         return result;
     }
 
-    private double evalPartialHands(HandValues values) {
+    private double evalPartialHands(HandValues values, int iter) {
         HandValues original = handVals;
         handVals = values;
         int total = 0;
         init();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < iter; i++) {
             int result = simGreedyPlay(25);
             total += result;
             //System.out.print("Play " + i + ": " + result + "; ");
@@ -160,7 +162,7 @@ public class GAPlayer extends OurPlayer implements PokerSquaresPlayer {
         }
         //System.out.println();
         handVals = original;
-        return total / 10.0;
+        return total / (double) iter;
     }
 
     /* (non-Javadoc)
