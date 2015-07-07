@@ -202,12 +202,15 @@ public class OurPlayer implements PokerSquaresPlayer {
 
         if (numPlays == 0) { // trivial first play
             plays[0] = 0;
+            System.arraycopy(plays, numPlays, legalPlayLists[numPlays], 0, 25);
         } else if (numPlays == 1) { // nearly trivial second play
             // compute average time per move evaluation
             int remainingPlays = NUM_POS - numPlays; // ignores triviality of last play to keep a conservative margin for game completion
             long millisPerPlay = millisRemaining / remainingPlays; // dividing time evenly with future getPlay() calls
             long millisPerMoveEval = millisPerPlay / remainingPlays; // dividing time evenly across moves now considered
-            int bestPlay = 0;
+            int bestPlay = 5;
+            
+            System.arraycopy(plays, numPlays, legalPlayLists[numPlays], 0, remainingPlays);
 
             double maxAverageScore = Double.NEGATIVE_INFINITY; // maximum average score found for moves so far            
 
@@ -235,6 +238,12 @@ public class OurPlayer implements PokerSquaresPlayer {
                         bestPlay = i;
                 }
             }
+            // update our list of plays, recording the chosen play in its sequential position; all onward from numPlays are empty positions
+            int bestPlayIndex = numPlays;
+            while (plays[bestPlayIndex] != bestPlay) {
+                bestPlayIndex++;
+            }
+            plays[bestPlayIndex] = plays[numPlays];
             plays[numPlays] = bestPlay;
         } else if (numPlays < 24) { // not the forced last play
             // compute average time per move evaluation
@@ -244,6 +253,7 @@ public class OurPlayer implements PokerSquaresPlayer {
 
             // copy the play positions (row-major indices) that are empty
             System.arraycopy(plays, numPlays, legalPlayLists[numPlays], 0, remainingPlays);
+            
             double maxAverageScore = Double.NEGATIVE_INFINITY; // maximum average score found for moves so far
             ArrayList<Integer> bestPlays = new ArrayList<>(); // all plays yielding the maximum average score 
             for (int i = 0; i < remainingPlays; i++) { // for each legal play position
@@ -314,7 +324,12 @@ public class OurPlayer implements PokerSquaresPlayer {
                 for (int i = 0; i < remainingPlays; i++) {
                     int play = legalPlayLists[numPlays][i];
                     makePlay(card, play / SIZE, play % SIZE);
-                    score = evalGrid(grid, numPlays - 1);
+                    if (numPlays == 25) {
+                        score = this.system.getScore(grid);
+                    } else {
+                        // Use our partial hand scores except for the final evaluation
+                        score = evalGrid(grid, numPlays - 1);
+                    }
                     if (score >= maxScore) {
                         if (score > maxScore) {
                             bestPlays.clear();

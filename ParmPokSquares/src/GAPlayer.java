@@ -100,8 +100,8 @@ public class GAPlayer extends OurPlayer implements PokerSquaresPlayer {
             if (numMutations > 0) {
                 for (int i = numElites; i < popSize; i++) {
                     for (int j = 0; j < numMutations; j++) {
-                        int handIndex = random.nextInt(OurPokerHand.INSIDE_STRAIGHT_FLUSH2.ordinal() - OurPokerHand.HIGH_CARD4.ordinal())
-                                + OurPokerHand.HIGH_CARD4.ordinal();
+                        int handIndex = random.nextInt(OurPokerHand.INSIDE_STRAIGHT_FLUSH2.ordinal() - OurPokerHand.HIGH_CARD5.ordinal())
+                                + OurPokerHand.HIGH_CARD5.ordinal();
                         int playIndex = random.nextInt(25);
                         HandValues current = newGeneration.get(i);
                         int change = random.nextInt(5) - 2;
@@ -122,7 +122,7 @@ public class GAPlayer extends OurPlayer implements PokerSquaresPlayer {
     private HandValues get5050Child(HandValues parent1, HandValues parent2) {
         HandValues result = (HandValues) parent1.deepClone();
 
-        for (int i = OurPokerHand.HIGH_CARD4.ordinal();
+        for (int i = OurPokerHand.HIGH_CARD5.ordinal();
                 i <= OurPokerHand.ZERO_CARDS.ordinal(); i++) {
             if (random.nextBoolean()) {
                 for (int j = 0; j < 3; j++) {
@@ -136,7 +136,7 @@ public class GAPlayer extends OurPlayer implements PokerSquaresPlayer {
     private HandValues getRandomHandValues(HandValues initial) {
         HandValues result = (HandValues) initial.deepClone();
 
-        for (int i = OurPokerHand.HIGH_CARD4.ordinal();
+        for (int i = OurPokerHand.HIGH_CARD5.ordinal();
                 i <= OurPokerHand.ZERO_CARDS.ordinal(); i++) {
             int change = random.nextInt(21) - 10;
             for (int j = 0; j < 3; j++) {
