@@ -44,7 +44,6 @@ public class OurPlayer implements PokerSquaresPlayer {
         long startTime = System.currentTimeMillis();
         long endTime = startTime + millis;
         this.system = system;
-
         // Five-card hands just have the scoring system values
         handVals.put(0, OurPokerHand.ROYAL_FLUSH5, system.getHandScore(PokerHand.ROYAL_FLUSH));
         handVals.put(0, OurPokerHand.STRAIGHT_FLUSH5, system.getHandScore(PokerHand.STRAIGHT_FLUSH));
@@ -56,7 +55,6 @@ public class OurPlayer implements PokerSquaresPlayer {
         handVals.put(0, OurPokerHand.TWO_PAIR5, system.getHandScore(PokerHand.TWO_PAIR));
         handVals.put(0, OurPokerHand.ONE_PAIR5, system.getHandScore(PokerHand.ONE_PAIR));
         handVals.put(0, OurPokerHand.HIGH_CARD5, system.getHandScore(PokerHand.HIGH_CARD));
-
         // Initialize values for partial hands as max potential score
         handVals.put(0, OurPokerHand.ROYAL_FLUSH4, Math.max(system.getHandScore(PokerHand.FLUSH),
                 Math.max(system.getHandScore(PokerHand.STRAIGHT_FLUSH),
@@ -193,6 +191,7 @@ public class OurPlayer implements PokerSquaresPlayer {
 
         // match simDeck to actual play event; in this way, all indices forward from the card contain a list of 
         //   undealt Cards in some permutation.
+        try{
         int cardIndex = numPlays;
         while (!card.equals(simDeck[cardIndex])) {
             cardIndex++;
@@ -209,7 +208,7 @@ public class OurPlayer implements PokerSquaresPlayer {
             long millisPerPlay = millisRemaining / remainingPlays; // dividing time evenly with future getPlay() calls
             long millisPerMoveEval = millisPerPlay / remainingPlays; // dividing time evenly across moves now considered
             int bestPlay = 5;
-            
+
             System.arraycopy(plays, numPlays, legalPlayLists[numPlays], 0, remainingPlays);
 
             double maxAverageScore = Double.NEGATIVE_INFINITY; // maximum average score found for moves so far            
@@ -232,10 +231,11 @@ public class OurPlayer implements PokerSquaresPlayer {
                 double averageScore = (double) scoreTotal / simCount;
                 if (averageScore >= maxAverageScore) {
                     maxAverageScore = averageScore;
-                    if (averageScore > maxAverageScore)
+                    if (averageScore > maxAverageScore) {
                         bestPlay = i;
-                    else if (random.nextInt(1) == 1)
+                    } else if (random.nextInt(1) == 1) {
                         bestPlay = i;
+                    }
                 }
             }
             // update our list of plays, recording the chosen play in its sequential position; all onward from numPlays are empty positions
@@ -253,7 +253,7 @@ public class OurPlayer implements PokerSquaresPlayer {
 
             // copy the play positions (row-major indices) that are empty
             System.arraycopy(plays, numPlays, legalPlayLists[numPlays], 0, remainingPlays);
-            
+
             double maxAverageScore = Double.NEGATIVE_INFINITY; // maximum average score found for moves so far
             ArrayList<Integer> bestPlays = new ArrayList<>(); // all plays yielding the maximum average score 
             for (int i = 0; i < remainingPlays; i++) { // for each legal play position
@@ -290,7 +290,12 @@ public class OurPlayer implements PokerSquaresPlayer {
         }
         int[] playPos = {plays[numPlays] / SIZE, plays[numPlays] % SIZE}; // decode it into row and column
         makePlay(card, playPos[0], playPos[1]); // make the chosen play (not undoing this time)
-        return playPos; // return the chosen play
+        return playPos;
+        } catch(ArrayIndexOutOfBoundsException ie)
+        {  //int playPos = 0;
+        }
+        return null;
+         // return the chosen play
     }
 
     /**
@@ -302,6 +307,7 @@ public class OurPlayer implements PokerSquaresPlayer {
      * depthLimit
      */
     protected int simGreedyPlay(int depthLimit) {
+
         if (numPlays > 24) {
             System.out.println("OOPS!  Start simGreedyPlay: numPlays: " + numPlays);
         }
@@ -311,41 +317,44 @@ public class OurPlayer implements PokerSquaresPlayer {
         } else { // up to the non-zero depth limit or to game end, iteratively make the given number of greedy plays o
             int score = Integer.MIN_VALUE;
             int maxScore = Integer.MIN_VALUE;
-            int depth = Math.min(depthLimit, NUM_POS - numPlays); // compute real depth limit, taking into account game end
-            for (int d = 0; d < depth; d++) {
-                // generate a random card draw
-                int c = random.nextInt(NUM_CARDS - numPlays) + numPlays;
-                Card card = simDeck[c];
-                // iterate through legal plays and choose the best greedy play (see similar approach in getPlay)
-                int remainingPlays = NUM_POS - numPlays;
-                System.arraycopy(plays, numPlays, legalPlayLists[numPlays], 0, remainingPlays);
-                maxScore = Integer.MIN_VALUE;
-                ArrayList<Integer> bestPlays = new ArrayList<Integer>();
-                for (int i = 0; i < remainingPlays; i++) {
-                    int play = legalPlayLists[numPlays][i];
-                    makePlay(card, play / SIZE, play % SIZE);
-                    if (numPlays == 25) {
-                        score = this.system.getScore(grid);
-                    } else {
-                        // Use our partial hand scores except for the final evaluation
-                        score = evalGrid(grid, numPlays - 1);
-                    }
-                    if (score >= maxScore) {
-                        if (score > maxScore) {
-                            bestPlays.clear();
+            try {
+                int depth = Math.min(depthLimit, NUM_POS - numPlays); // compute real depth limit, taking into account game end
+                for (int d = 0; d < depth; d++) {
+                    // generate a random card draw
+                    int c = random.nextInt(NUM_CARDS - numPlays) + numPlays;
+                    Card card = simDeck[c];
+                    // iterate through legal plays and choose the best greedy play (see similar approach in getPlay)
+                    int remainingPlays = NUM_POS - numPlays;
+                    System.arraycopy(plays, numPlays, legalPlayLists[numPlays], 0, remainingPlays);
+                    maxScore = Integer.MIN_VALUE;
+                    ArrayList<Integer> bestPlays = new ArrayList<Integer>();
+                    for (int i = 0; i < remainingPlays; i++) {
+                        int play = legalPlayLists[numPlays][i];
+                        makePlay(card, play / SIZE, play % SIZE);
+                        if (numPlays == 25) {
+                            score = this.system.getScore(grid);
+                        } else {
+                            // Use our partial hand scores except for the final evaluation
+                            score = evalGrid(grid, numPlays - 1);
                         }
-                        bestPlays.add(play);
-                        maxScore = score;
+                        if (score >= maxScore) {
+                            if (score > maxScore) {
+                                bestPlays.clear();
+                            }
+                            bestPlays.add(play);
+                            maxScore = score;
+                        }
+                        undoPlay();
                     }
+                    int bestPlay = bestPlays.get(random.nextInt(bestPlays.size()));
+                    makePlay(card, bestPlay / SIZE, bestPlay % SIZE);
+                }
+            // At this point, the last maxScore value is the end value of this Monte Carlo situation.
+                // Undo MC plays.
+                for (int d = 0; d < depth; d++) {
                     undoPlay();
                 }
-                int bestPlay = bestPlays.get(random.nextInt(bestPlays.size()));
-                makePlay(card, bestPlay / SIZE, bestPlay % SIZE);
-            }
-            // At this point, the last maxScore value is the end value of this Monte Carlo situation.
-            // Undo MC plays.
-            for (int d = 0; d < depth; d++) {
-                undoPlay();
+            } catch (ArrayIndexOutOfBoundsException ie) {
             }
             return maxScore;
         }
@@ -353,13 +362,15 @@ public class OurPlayer implements PokerSquaresPlayer {
 
     public void makePlay(Card card, int row, int col) {
         // match simDeck to event
-        int cardIndex = numPlays;
-        while (!card.equals(simDeck[cardIndex])) {
-            cardIndex++;
+        try {
+            int cardIndex = numPlays;
+            while (!card.equals(simDeck[cardIndex])) {
+                cardIndex++;
+            }
+            simDeck[cardIndex] = simDeck[numPlays];
+            simDeck[numPlays] = card;
+        } catch (ArrayIndexOutOfBoundsException ie) {
         }
-        simDeck[cardIndex] = simDeck[numPlays];
-        simDeck[numPlays] = card;
-
         // update plays to reflect chosen play in sequence
         grid[row][col] = card;
         int play = row * SIZE + col;
@@ -367,17 +378,22 @@ public class OurPlayer implements PokerSquaresPlayer {
         while (plays[j] != play) {
             j++;
         }
-        plays[j] = plays[numPlays];
-        plays[numPlays] = play;
-
+        try {
+            plays[j] = plays[numPlays];
+            plays[numPlays] = play;
+        } catch (ArrayIndexOutOfBoundsException ie) {
+        }
         // increment the number of plays taken
         numPlays++;
     }
 
     public void undoPlay() { // undo the previous play
-        numPlays--;
-        int play = plays[numPlays];
-        grid[play / SIZE][play % SIZE] = null;
+        try {
+            numPlays--;
+            int play = plays[numPlays];
+            grid[play / SIZE][play % SIZE] = null;
+        } catch (ArrayIndexOutOfBoundsException ie) {
+        }
     }
 
     /* (non-Javadoc)
@@ -474,5 +490,4 @@ public class OurPlayer implements PokerSquaresPlayer {
         }
         System.out.printf("%3d Total\n", totalScore);
     }
-
 }
