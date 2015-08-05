@@ -53,11 +53,11 @@ public class SRulerPlayer extends OurPlayer implements PokerSquaresPlayer {
 
             for (int i = 0; i < neighbor.size(); i++) {
                 for (OurPokerHand thisHand : OurPokerHand.values()) {
-                    if (thisHand.ordinal() >= 10
-                            && random.nextInt(100) > ((double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime) * 50)) {
+                    // At the beginning, change nearly everything.  Near the end, only change half.
+                    if (random.nextInt(100) > ((double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime) * 50)) {
                         // sets new values for partial hands to test the "neighbors"
                         //int interval = (int) (((double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime)) * 20) + 2;
-                        int interval = 40;
+                        int interval = 4;
                         int newVal = neighbor.get(i*10+1, thisHand) + random.nextInt(interval) - (interval / 2);
                         // the new values for the neighbor can only ever be modified between -128-127
                         newVal = Math.min(newVal, 127);
@@ -104,7 +104,7 @@ public class SRulerPlayer extends OurPlayer implements PokerSquaresPlayer {
                 bestHandVals = neighbor.deepClone();
                 bestValue = neighborVal;
                 System.out.println("******************************************************** iter: " + iter + "\t%time elapsed: " + 100 * (double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime));
-                System.out.println("New best: \n" + bestValue + " " + bestHandVals);
+                System.out.println("New best: " + bestValue + " \n" + bestHandVals);
             }
             
 

@@ -170,6 +170,6 @@ public class GAPlayer extends OurPlayer implements PokerSquaresPlayer {
      */
     @Override
     public String getName() {
-        return "GAPlayer" + depthLimit + "_" + popSize;
+        return "GAPlayer" + depthLimit + "_" + popSize + "_" + numMutations;
     }
 }

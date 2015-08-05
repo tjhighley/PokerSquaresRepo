@@ -85,8 +85,16 @@ public class OurPlayer implements PokerSquaresPlayer {
                 Math.max(system.getHandScore(PokerHand.TWO_PAIR),
                         system.getHandScore(PokerHand.THREE_OF_A_KIND))));
         handVals.put(0, OurPokerHand.HIGH_CARD4, Math.max(system.getHandScore(PokerHand.HIGH_CARD),
-                system.getHandScore(PokerHand.ONE_PAIR)));
+                system.getHandScore(PokerHand.ONE_PAIR)));               
 
+        // Hands that would not score anything are worth less
+        handVals.put(0, OurPokerHand.FLUSH4, (handVals.get(0, OurPokerHand.FLUSH4) + 1) / 2);
+        handVals.put(0, OurPokerHand.STRAIGHT4, (handVals.get(0, OurPokerHand.STRAIGHT4) + 1) / 2);
+        handVals.put(0, OurPokerHand.STRAIGHT_FLUSH4, (handVals.get(0, OurPokerHand.STRAIGHT_FLUSH4) + 1) / 2);
+        handVals.put(0, OurPokerHand.ROYAL_FLUSH4, (handVals.get(0, OurPokerHand.ROYAL_FLUSH4) + 1) / 2);
+        handVals.put(0, OurPokerHand.INSIDE_STRAIGHT4, (handVals.get(0, OurPokerHand.INSIDE_STRAIGHT4) + 1) / 2);
+        handVals.put(0, OurPokerHand.INSIDE_STRAIGHT_FLUSH4, (handVals.get(0, OurPokerHand.INSIDE_STRAIGHT_FLUSH4) + 1) / 2);
+        
         // 3-card hands
         handVals.put(0, OurPokerHand.ROYAL_FLUSH3, Math.max(handVals.get(0, OurPokerHand.ROYAL_FLUSH4),
                 Math.max(handVals.get(0, OurPokerHand.STRAIGHT4), Math.max(handVals.get(0, OurPokerHand.FLUSH4),
@@ -246,10 +254,20 @@ public class OurPlayer implements PokerSquaresPlayer {
             plays[bestPlayIndex] = plays[numPlays];
             plays[numPlays] = bestPlay;
         } else if (numPlays < 24) { // not the forced last play
-            // compute average time per move evaluation
-            int remainingPlays = NUM_POS - numPlays; // ignores triviality of last play to keep a conservative margin for game completion
-            long millisPerPlay = millisRemaining / remainingPlays; // dividing time evenly with future getPlay() calls
-            long millisPerMoveEval = millisPerPlay / remainingPlays; // dividing time evenly across moves now considered
+            int remainingPlays = NUM_POS - numPlays;  // ignores triviality of last play to keep a conservative margin for game completion
+            long millisPerPlay, millisPerMoveEval;
+
+            if (numPlays < 5) {
+                // compute average time per move evaluation
+                millisPerPlay = millisRemaining / remainingPlays; // dividing time evenly with future getPlay() calls
+                millisPerMoveEval = millisPerPlay / remainingPlays; // dividing time evenly across moves now considered
+            } else {
+                int remainingEvals = 0;
+                for (int i = numPlays; i < SIZE * SIZE; i++) {
+                    remainingEvals += (SIZE * SIZE) - numPlays;
+                }
+                millisPerMoveEval = millisRemaining / (remainingEvals + 4);
+            }
 
             // copy the play positions (row-major indices) that are empty
             System.arraycopy(plays, numPlays, legalPlayLists[numPlays], 0, remainingPlays);
