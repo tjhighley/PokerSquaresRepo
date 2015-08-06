@@ -44,7 +44,7 @@ and tournament evaluation.
 public class PokerSquares {
 	
 	public static final int SIZE = 5; // square grid size
-	public static final long POINT_SYSTEM_MILLIS = 14400000L; // EAAI-2016 contest maximum milliseconds for processing score table
+	public static final long POINT_SYSTEM_MILLIS = 300000L; // EAAI-2016 contest maximum milliseconds for processing score table
 	public static final long GAME_MILLIS = 30000L; // EAAI-2016 contest maximum milliseconds per game
 
 	private PokerSquaresPlayer player; // current player
@@ -316,14 +316,14 @@ public class PokerSquares {
 //                players.add(new GAPlayer(25, 500, 2, true));	                                                
 //                players.add(new GAPlayer(25, 400, 2, true));	                                                
 //                players.add(new GAPlayer(25, 250, 20, true));                 
-                players.add(new GAPlayer(25, 250, 2, true));	                                                
+                players.add(new HighleyMcNulty_GAPlayer(25, 250, 2, true));	                                                
 //                players.add(new GAPlayer(25, 250, 1, true));	                                                
 //                players.add(new GAPlayer(25, 960, 2, true));	                                                
 //                players.add(new GAPlayer(25, 300, 2, true));	                                                
-                players.add(new SRulerPlayer(25));      
-                players.add(new OurPlayer(25));
+                players.add(new HighleyMcNulty_SRulerPlayer(25));      
+//                players.add(new OurPlayer(25));
 //		players.add(new RandomPlayer());
-		players.add(new GreedyMCPlayer(25));
+//		players.add(new GreedyMCPlayer(25));
 		ArrayList<PokerSquaresPointSystem> systems = new ArrayList<>();
 		PokerSquaresPointSystem.setSeed(0L);
 //		systems.add(system);
