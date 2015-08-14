@@ -1,3 +1,8 @@
+// HighleyMcNulty_SRulerPlayer
+// Timothy Highley and Zachary McNulty
+// Player for NSGC: Poker Squares
+
+
 public class HighleyMcNulty_SRulerPlayer extends HighleyMcNulty_OurPlayer implements PokerSquaresPlayer {
 
     public HighleyMcNulty_SRulerPlayer() {
@@ -42,7 +47,7 @@ public class HighleyMcNulty_SRulerPlayer extends HighleyMcNulty_OurPlayer implem
 
         // finding "neighbors" to give new values for partial hands
         long startLoopTime = System.currentTimeMillis();
-        endTime = endTime - 3000; // Shorten time for testing
+        endTime = endTime - 3000; // 3 seconds to make sure we end on time
         int iter = 0;
         while (System.currentTimeMillis() < endTime) {
             iter++;
@@ -103,8 +108,8 @@ public class HighleyMcNulty_SRulerPlayer extends HighleyMcNulty_OurPlayer implem
                 // saves the best hand values
                 bestHandVals = neighbor.deepClone();
                 bestValue = neighborVal;
-                System.out.println("******************************************************** iter: " + iter + "\t%time elapsed: " + 100 * (double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime));
-                System.out.println("New best: " + bestValue + " \n" + bestHandVals);
+                //System.out.println("******************************************************** iter: " + iter + "\t%time elapsed: " + 100 * (double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime));
+                //System.out.println("New best: " + bestValue + " \n" + bestHandVals);
             }
             
 

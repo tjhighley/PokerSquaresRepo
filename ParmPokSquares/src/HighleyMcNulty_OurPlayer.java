@@ -1,3 +1,6 @@
+// HighleyMcNulty_OurPlayer
+// Timothy Highley and Zachary McNulty
+// Player for NSGC: Poker Squares
 
 import java.util.ArrayList;
 import java.util.Random;

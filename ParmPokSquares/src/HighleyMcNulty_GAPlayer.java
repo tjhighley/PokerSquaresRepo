@@ -1,3 +1,7 @@
+// HighleyMcNulty_GAPlayer
+// Timothy Highley and Zachary McNulty
+// Player for NSGC: Poker Squares
+
 public class HighleyMcNulty_GAPlayer extends HighleyMcNulty_OurPlayer implements PokerSquaresPlayer {
    
     private int popSize;
@@ -9,6 +13,11 @@ public class HighleyMcNulty_GAPlayer extends HighleyMcNulty_OurPlayer implements
      * Create a Greedy Monte Carlo player that simulates greedy play to depth 2.
      */
     public HighleyMcNulty_GAPlayer() {
+        this.depthLimit = 25;
+        this.popSize = 250;
+        this.numElites = popSize / 20;
+        this.numMutations = 2;
+        this.crossoverOn = true;        
     }
 
     /**
@@ -50,15 +59,15 @@ public class HighleyMcNulty_GAPlayer extends HighleyMcNulty_OurPlayer implements
 //            System.out.println(population.toString(i));
         }
         long startLoopTime = System.currentTimeMillis();
-        endTime = endTime - 3000; // Shorten time for testing
+        endTime = endTime - 3000; // 3 seconds to make sure we end on time
                 
         // Generate new generations
         while (System.currentTimeMillis() < endTime) {
             iter++;
-            if (iter % 10 == 0) {
-                System.out.println(iter + "\t%time elapsed: " + 100 * (double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime));
-                System.out.println(population.toString(0));
-            }
+            //if (iter % 10 == 0) {
+                //System.out.println(iter + "\t%time elapsed: " + 100 * (double) (System.currentTimeMillis() - startLoopTime) / (endTime - startLoopTime));
+                //System.out.println(population.toString(0));
+            //}
 
             // Evaluate each member of this generation
             for (int i = 0; i < popSize; i++) {
